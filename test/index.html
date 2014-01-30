@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset='utf-8'>
+	<title>SuperController - тестовое приложение</title>
+	<!-- Вспомогательные стили -->
+	<link rel='stylesheet' href='../node_modules/nodeunit/dist/browser/nodeunit.css'>
+	<!-- Вспомогательные библиотеки -->
+	<script src='../node_modules/es6-promise/dist/promise-0.1.1.min.js'></script>
+	<script src='../node_modules/wolfy87-eventemitter/EventEmitter.min.js'></script>
+	<script src='../node_modules/mustache/mustache.min.js'></script>
+	<script src='../vendor/coffee-script.js'></script>
+	<!-- Контроллер -->
+	<script type='text/coffeescript' src='../src/common.coffee'></script>
+	<script type='text/coffeescript' src='../src/logger.coffee'></script>
+	<!-- <script type='text/coffeescript' src='../src/events.coffee'></script> -->
+	<script type='text/coffeescript' src='../src/loader.coffee'></script>
+	<script type='text/coffeescript' src='../src/layers.coffee'></script>
+	<script type='text/coffeescript' src='../src/state.coffee'></script>
+	<!-- Пользовательское приложение -->
+	<!-- Тестирование -->
+	<script src='../node_modules/nodeunit/dist/browser/nodeunit.js'></script>
+	<script type='text/coffeescript' src='../test/module.coffee'></script>
+	<script type='text/coffeescript' src='../test/logger.coffee'></script>
+	<!-- <script type='text/coffeescript' src='../test/events.coffee'></script> -->
+	<script type='text/coffeescript' src='../test/events.coffee'></script>
+	<script type='text/coffeescript' src='../test/loader.coffee'></script>
+	<script type='text/coffeescript' src='../test/layers.coffee'></script>
+	<script type='text/coffeescript' src='../test/state.coffee'></script>
+</head>
+
+<body>
+	<h1>Привет, здесь будет тестовое приложение</h1>
+	<h2>
+		Состояния
+	</h2>
+	<table border=1>
+		<tr>
+			<td>
+				шапка
+				<hr>
+				главная страница
+				<hr>
+				подвал
+			</td>
+			<td>
+				шапка
+				<hr>
+				страница 1 | сайдбар
+				<hr>
+				подвал
+			</td>
+			<td>
+				шапка
+				<hr>
+				страница 2 | сайдбар
+				<hr>
+				подвал
+			</td>
+		</tr>
+	</table>
+	<h2>Приложение</h2>
+	<div id='app'>
+		Загрузка...
+	</div>
+	<h2>Тестриование</h2>
+	<div id='nodeunit'></div>
+	<script type='text/coffeescript'>
+		nodeunit.run({
+		module
+		logger
+		#selector
+		events
+		loader
+		layers
+		state
+		#compile1lvl
+		#compile2lvl
+		#checkLayer
+		#layer
+		}, document.getElementById('nodeunit'))
+</script>
+</body>
+
+</html>
