@@ -16,18 +16,22 @@
 	<script type='text/coffeescript' src='../src/logger.coffee'></script>
 	<!-- <script type='text/coffeescript' src='../src/events.coffee'></script> -->
 	<script type='text/coffeescript' src='../src/loader.coffee'></script>
-	<script type='text/coffeescript' src='../src/layers.coffee'></script>
+	<script type='text/coffeescript' src='../src/selector.coffee'></script>
+	<script type='text/coffeescript' src='../src/compile.coffee'></script>
 	<script type='text/coffeescript' src='../src/state.coffee'></script>
+	<!-- <script type='text/coffeescript' src='../src/layer.coffee'></script> -->
 	<!-- Пользовательское приложение -->
+	<!-- <script type='text/coffeescript' src='../test/app.coffee'></script> -->
 	<!-- Тестирование -->
 	<script src='../node_modules/nodeunit/dist/browser/nodeunit.js'></script>
 	<script type='text/coffeescript' src='../test/module.coffee'></script>
 	<script type='text/coffeescript' src='../test/logger.coffee'></script>
-	<!-- <script type='text/coffeescript' src='../test/events.coffee'></script> -->
 	<script type='text/coffeescript' src='../test/events.coffee'></script>
 	<script type='text/coffeescript' src='../test/loader.coffee'></script>
-	<script type='text/coffeescript' src='../test/layers.coffee'></script>
+	<script type='text/coffeescript' src='../test/selector.coffee'></script>
+	<script type='text/coffeescript' src='../test/compile.coffee'></script>
 	<script type='text/coffeescript' src='../test/state.coffee'></script>
+	<!-- <script type='text/coffeescript' src='../test/layer.coffee'></script> -->
 </head>
 
 <body>
@@ -62,23 +66,24 @@
 	</table>
 	<h2>Приложение</h2>
 	<div id='app'>
-		Загрузка...
+		<span>Загрузка...</span>
 	</div>
 	<h2>Тестриование</h2>
+	<div style='display:none' id='testSelector'>
+		<span>1</span>
+		<span>2</span>
+	</div>
 	<div id='nodeunit'></div>
 	<script type='text/coffeescript'>
 		nodeunit.run({
 		module
 		logger
-		#selector
 		events
 		loader
-		layers
+		selector
+		compile
 		state
-		#compile1lvl
-		#compile2lvl
-		#checkLayer
-		#layer
+		# layer
 		}, document.getElementById('nodeunit'))
 </script>
 </body>

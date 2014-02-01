@@ -1,6 +1,6 @@
 class Events
 
-  constructor: (@options = {}) ->
+  constructor: (options = {}) ->
     @_listeners = {} # здесь хранятся обработчики для выполнения
     @_del_listeners = {} # обработчик находящийся здесь будет удален
 

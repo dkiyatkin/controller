@@ -1,7 +1,7 @@
 if not window?
   Loader = require('../src/loader.coffee')
-  connect = require('connect')
-  request = require('request')
+  load = require('../lib/load.coffee')
+  #connect = require('connect')
 else
   window.exports = {}
   window.loader = exports
@@ -17,15 +17,7 @@ exports.loadFile = (test) ->
     #connect().use(connect.static(__dirname)).listen(3000)
     #catch e console.log e
     loader = new Loader({
-      load: (file, options, cb) ->
-        cb = options if not cb
-        options = {} if not options
-        options.url = 'http://127.0.0.1:3000/' + file
-        request options, (error, response, body) ->
-          if not error and response.statusCode is 200
-            cb null, body
-          else
-            cb error || response.statusCode
+      load: load
     })
   loader.load text_file, (err, data) ->
     test.ok not err, "errors"

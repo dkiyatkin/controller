@@ -1,16 +1,29 @@
-fs = require 'fs'
-Selector = require('../src/selector.coffee')
-jsdom = require("jsdom").jsdom
+#x>
+if not window?
+  Selector = require('../src/selector.coffee')
+  cheerio = require('cheerio')
+  load = require('../lib/load.coffee')
+else
+  window.exports = {}
+  window.selector = exports
+  Selector = window.Selector
+#<x
 
-# Стандартный селектор selector.$
+_setSelector = (selector, test) ->
+  test.strictEqual(selector.$('html').find('body').find('div').length, 3, 'divs')
+  test.strictEqual(selector.$('html').find('body').find('div').find('span').length, 3, 'spans')
+  test.strictEqual(selector.$('td').find('hr').length, 6, 'hrs')
+  test.strictEqual(selector.$('#testSelector').html().trim().replace(/\s+/g,''), '<span>1</span><span>2</span>')
+  selector.$('#testSelector span').html('3')
+  test.strictEqual(selector.$('#testSelector').html().trim().replace(/\s+/g,''), '<span>3</span><span>3</span>')
+  selector.$('#testSelector').find('span').html('4')
+  test.strictEqual(selector.$('#testSelector').html().trim().replace(/\s+/g,''), '<span>4</span><span>4</span>')
+  test.done()
+
 exports.setSelector = (test) ->
-  setSelector = (selector) ->
-    test.strictEqual selector.$('html body').find('#test_controller')[0].innerHTML , 'hello world', "selector"
-    test.done()
-  jsdom.env
-    html: fs.readFileSync(__dirname + '/index.html', 'utf-8')
-    features:
-      QuerySelector: true
-    done: (err, window) ->
-      selector = new Selector({document: window.document})
-      setSelector(selector)
+  if not window?
+    load('/test/index.html', {}, (err, ans) ->
+      _setSelector(new Selector({$:cheerio.load(ans)}), test)
+    )
+  else
+    _setSelector(new Selector(), test)
