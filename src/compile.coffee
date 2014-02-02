@@ -90,22 +90,24 @@ class Compile extends Selector
   compileLayer: (layer, parentLayer) ->
     newParentLayer =
       query: layer.query
-      state: (if layer.state then layer.state else '/')
+      state: layer.state || parentLayer.state || '/'
       css: layer.css
       json: layer.json
+      jsontpl: layer.jsontpl
       tpl: layer.tpl
+      tpltpl: layer.tpltpl
       label: layer.label
       ext: layer.ext
-      config: (if layer.config then layer.config else {})
+      config: layer.config || {}
       data: layer.data
       tplString: layer.tplString
       htmlString: layer.htmlString
       childLayers: []
-      childQueries: []
-      childStates: []
-      oncheck: (if layer.oncheck then layer.oncheck else @empty)
-      onload: (if layer.onload then layer.onload else @empty)
-      onshow: (if layer.onshow then layer.onshow else @empty)
+      childQueries: {}
+      childStates: {}
+      oncheck: layer.oncheck || @empty
+      onload: layer.onload || @empty
+      onshow: layer.onshow || @empty
       parentLayer: parentLayer
       node: null
       regState: null
@@ -124,13 +126,18 @@ class Compile extends Selector
       @compile layer.childLayers, newParentLayer
     if layer.childQueries
       for own param, childLayer of layer.childQueries
-        childLayer.query = param
-        newParentLayer.childQueries.push(@compile(childLayer, newParentLayer))
+        childLayer.query = param # тэги не прибавляются
+        newParentLayer.childQueries[param] = @compile(childLayer, newParentLayer)
     if layer.childStates
       for own param, childLayer of layer.childStates
-        childLayer.state = param
-        newParentLayer.childStates.push(@compile(childLayer, newParentLayer))
+        if (param[0] is "^") or (param.slice(-1) is "$") # если есть спец символы то наследование state не происходит
+          childLayer.state = param
+        else
+          childLayer.state = newParentLayer.state + param + "/"
+        newParentLayer.childStates[param] = @compile(childLayer, newParentLayer)
     @emit 'compile', layer, parentLayer
+    if not ((newParentLayer.state[0] is "^") or (newParentLayer.state.slice(-1) is "$")) # если есть спец символы то state не изменяем
+      newParentLayer.state = '^'+newParentLayer.state+'.*$'
     newParentLayer
 
 #x>

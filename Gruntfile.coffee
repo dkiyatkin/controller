@@ -2,13 +2,13 @@ module.exports = (grunt) ->
   grunt.initConfig
     pkg: grunt.file.readJSON('package.json')
     nodeunit: [
-      #'test/module.coffee'
-      #'test/logger.coffee'
-      #'test/events.coffee'
-      #'test/loader.coffee'
-      #'test/selector.coffee'
-      #'test/compile.coffee'
-      #'test/state.coffee'
+      'test/module.coffee'
+      'test/logger.coffee'
+      'test/events.coffee'
+      'test/loader.coffee'
+      'test/selector.coffee'
+      'test/compile.coffee'
+      'test/state.coffee'
       'test/layer.coffee'
     ]
     replace:

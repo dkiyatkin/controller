@@ -96,9 +96,9 @@ exports.compile2 = (test) ->
   controller.labels['main'][0].test = 1
   test.expect 7
   test.equal controller.layers.length, cmpl, 'event compile layer'
-  test.equal controller.labels['main'][0].state, '/', 'state'
-  test.equal controller.labels['page2'][0].state, 'page2', 'state 2'
-  test.equal controller.labels['main'][0].childQueries[0], controller.labels['page'][0], 'eq childQueries[i] and labels[j]'
+  test.equal controller.labels['main'][0].state, '^/.*$', 'state'
+  test.equal controller.labels['page2'][0].state, '^/page2/.*$', 'state 2'
+  test.equal controller.labels['main'][0].childQueries['page'], controller.labels['page'][0], 'eq childQueries[i] and labels[j]'
   test.notEqual controller.labels['main'][0], controller2.labels['main'][0], 'not eq layers for different controllers'
   test.ok controller.labels['main'][0].test, 'not eq layers for different controllers 1'
   test.ok !controller2.labels['main'][0].test, 'not eq layers for different controllers 2'

@@ -10,7 +10,7 @@ else
 #<x
 
 _setSelector = (selector, test) ->
-  test.strictEqual(selector.$('html').find('body').find('div').length, 3, 'divs')
+  test.strictEqual(selector.$('html').find('body').find('div').length, 4, 'divs')
   test.strictEqual(selector.$('html').find('body').find('div').find('span').length, 3, 'spans')
   test.strictEqual(selector.$('td').find('hr').length, 6, 'hrs')
   test.strictEqual(selector.$('#testSelector').html().trim().replace(/\s+/g,''), '<span>1</span><span>2</span>')

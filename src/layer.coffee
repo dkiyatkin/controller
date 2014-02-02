@@ -30,7 +30,7 @@ class Layer extends State
     while --i >= 0
       if @layers[i].show
         if layer.query is @layers[i].query
-        else if @$(layer.query) is @$(@layers[i].query)
+        else if @$(layer.query) is @$(@layers[i].query) # wtf? TODO
           @disableLayer @layers[i]
         else
           if @$(layer.query).find(@layers[i].query).length
@@ -59,14 +59,15 @@ class Layer extends State
   # приготовить слой к вставке, получить нужные данные слоя
   loadLayer = (layer, cb) -> # Правило: Слои здесь точно скрыты
     counter = 2
-    if layer.htmlString cb()
+    if layer.htmlString
+      cb()
     else if layer.tpl or layer.tplString
-      @getLayerTemplate layer, ->
+      @getLayerTemplate layer, =>
         if --counter is 0
           layer.onload => # все данные загружены
             layer.htmlString = @tplRender layer.tplString, layer
             cb()
-      @getLayerData layer, ->
+      @getLayerData layer, =>
         if --counter is 0
           layer.onload => # все данные загружены
             layer.htmlString = @tplRender layer.tplString, layer
@@ -84,7 +85,7 @@ class Layer extends State
   ###
   checkLayer = (layer) ->
     if not layer.parentLayer.show
-      return ' no parent'
+      return 'no parent'
     if @state.circle.queries[layer.query] # query не наследуются в отличии от state
       return 'query already exists ' + layer.query
     layer.node = @$(layer.query) unless layer.node
@@ -95,7 +96,7 @@ class Layer extends State
         return 'busy tags'
     if not _stateOk(layer.regState, @state.circle.state) # подходит ли state
       return 'state mismatch'
-    return false
+    return true
 
   # Скрыть и убрать из цикла те слои, которые будут замещены вставленным слоем
   enableLayer = (layer) ->
@@ -105,7 +106,7 @@ class Layer extends State
     @once 'circle', => # пропустить круг
       if @state.circle.interrupt
         @log.debug "check interrupt 1"
-        @emit 'circle'
+        #@emit 'circle'
       else
         @state.circle.loading++
         @externalLayer layer, =>
@@ -114,26 +115,26 @@ class Layer extends State
             layer.status = 'insert'
             if layer.show
               @state.circle.loading--
-              @emit 'circle'
+              #@emit 'circle'
             else
               @loadLayer layer, (err) =>
                 if err
                   @log.error "layer can not be inserted", layer.id
                   layer.status = 'wrong insert'
                   @state.circle.loading--
-                  @emit 'circle'
+                  #@emit 'circle'
                 else
                   if @state.circle.interrupt
                     @log.debug "check interrupt 2"
                     @state.circle.loading--
-                    @emit 'circle'
+                    #@emit 'circle'
                   else
                     @$(layer.query).html(layer.htmlString)
                     layer.lastState = @state.circle.state
                     layer.show = true
                     layer.onshow =>
                       @state.circle.loading--
-                      @emit 'circle'
+                      #@emit 'circle'
 
   # скрыть слой и всех его потомков
   disableLayer = (layer) ->
@@ -147,7 +148,6 @@ class Layer extends State
 
   constructor: (options={}) ->
     super
-    @tplRender = options.tplRender || window.Mustache.render
     @getLayerTemplate = getLayerTemplate
     @getLayerData = getLayerData
     @loadLayer = loadLayer

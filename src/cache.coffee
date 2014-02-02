@@ -167,12 +167,3 @@ if not @options.title? then @options.title = true
         meta.setAttribute "name", 'keywords'
         meta.setAttribute "content", @meta.keywords
         head.appendChild meta
-
-    @on "compile", (layer, prop, value) =>
-      layer[prop] = value if prop is "jsontpl"
-
-    @on "start", =>
-      i = @layers.length
-      while --i >= 0
-        @layers[i].reg_state = @state.match(new RegExp(@layers[i].state, "im")) if @state
-        @layers[i].json = @tplParser(@layers[i].jsontpl, @layers[i]) if @layers[i].jsontpl

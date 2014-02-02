@@ -31,6 +31,7 @@ class State extends Compile
 
   constructor: (options={}) ->
     super
+    @tplRender = options.tplRender
 
     ###*
     * Запуск контроллера. Применить приложение в соответсвующие состояние.
@@ -66,7 +67,7 @@ class State extends Compile
         count: 0 # счетчик, сбрасывается в каждом круге
         queries: {} # забитые запросы, за определенными слоями
         loading: 0 # ассинхронная загрузка, если 0 то выход из цикла
-        state: state
+        state: (if state then state+'')
         limit: (if options.limit then options.limit else 100) # количество возможных кругов чека
         queue: (if options.queue then options.queue else 1) # насколько большая может быть очередь для чеков
         length: @layers.length
@@ -76,8 +77,12 @@ class State extends Compile
         time: Date.now() # время начала
       if @state.circle.state # совпавшее состояние слоя, может быть не полностью равным @state.circle.state
         i = @state.circle.length
-        while --i >= 0
+        while --i >= 0 # firstCircle
           @layers[i].status = 'queue'
+          @layers[i].regState = @state.circle.state.match(new RegExp(@layers[i].state, "im"))
+          @layers[i].json = @tplRender(@layers[i].jsontpl, @layers[i]) if @layers[i].jsontpl
+          @layers[i].tpl = @tplRender(@layers[i].tpltpl, @layers[i]) if @layers[i].tpltpl
+          delete @layers[i].node
         @emit 'circle'
       else
         @log.warn('no set circle.state')

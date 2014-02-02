@@ -22,7 +22,7 @@ exports.noStateCheckEnd = (test) ->
   test.expect 3
   state = new State({logger: 'DEBUG', quiet: true, index: {}})
   state.state false, () ->
-    test.ok(state.log.history.indexOf('no set circle.state') isnt -1)
+    test.ok(state.log.history.indexOf('no set circle.state') isnt -1, 'no set state')
   state2 = new State({logger: 'DEBUG', index: {}})
   state2.removeAllListeners('layer')
   state2.on 'layer', (layer, num) ->
