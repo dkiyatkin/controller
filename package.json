@@ -1,0 +1,49 @@
+{
+  "name": "super-controller",
+  "version": "0.0.0",
+  "description": "JavaScript layers controller. Manage layers.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "grunt nodeunit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/dkiyatkin/controller.git"
+  },
+  "keywords": [
+    "layers",
+    "controller"
+  ],
+  "author": "Dmitriy Kiyatkin <info@dkiyatkin.com> (http://dkiyatkin.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dkiyatkin/controller/issues"
+  },
+  "homepage": "https://github.com/dkiyatkin/controller",
+  "devDependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-nodeunit": "~0.2.2",
+    "request": "~2.31.0",
+    "connect": "~2.12.0",
+    "mustache": "~0.8.1",
+    "wolfy87-eventemitter": "~4.2.6",
+    "es5-shim": "~2.3.0",
+    "nodeunit": "~0.8.4",
+    "inherits": "~2.0.1",
+    "grunt-contrib-coffee": "~0.8.2",
+    "grunt-replace": "~0.5.1",
+    "grunt-contrib-uglify": "~0.3.2",
+    "grunt-umd": "~1.6.1",
+    "grunt-contrib-clean": "~0.5.0",
+    "source-map-support": "~0.2.5"
+  },
+  "dependencies": {
+    "es6-promise": "~0.1.1",
+    "test-logger": "0.0.2",
+    "xmlhttprequest": "~1.6.0",
+    "cheerio": "~0.13.1"
+  }
+}
