@@ -64,7 +64,7 @@ class State extends Compile
       @state.circle =
         interrupt: false # прерывание
         count: 0 # счетчик, сбрасывается в каждом круге
-        occupied: {} # забитые тэги, за определенными слоями
+        queries: {} # забитые запросы, за определенными слоями
         loading: 0 # ассинхронная загрузка, если 0 то выход из цикла
         state: state
         limit: (if options.limit then options.limit else 100) # количество возможных кругов чека
@@ -98,7 +98,10 @@ class State extends Compile
           @emit 'layer', @layers[i], i
       restrictions = updateRestrictions(@state.circle, _getListeners('circle', @))
       log.warn(restrictions) if restrictions
-      if not @state.circle.loading
+      listeners = _getListeners('circle', @)
+      if listeners.length > 1 # появились дополнительные подписчики, только once для пропуска круга
+        @emit 'circle'
+      else if not @state.circle.loading
         @emit 'end'
 
     @on 'end', ->

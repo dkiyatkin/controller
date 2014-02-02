@@ -21,7 +21,8 @@ class Module extends EventEmitter
     obj.included?.apply(@)
     this
 
-  empty: (cb) -> cb()
+  empty: (cb) ->
+    cb() if cb
 
 mixOf = (base, mixins...) ->
   class Mixed extends base
