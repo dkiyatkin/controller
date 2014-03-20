@@ -1,8 +1,10 @@
 #x>
 if not window?
-  EventEmitter = require('wolfy87-eventemitter')
+  #EventEmitter = require('wolfy87-eventemitter')
+  EventEmitter = require('eventemitter2').EventEmitter2
 else
-  EventEmitter = window.EventEmitter
+  # EventEmitter = window.EventEmitter
+  EventEmitter = window.EventEmitter2
 #<x
 
 moduleKeywords = ['extended', 'included']

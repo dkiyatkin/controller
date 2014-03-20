@@ -31,7 +31,7 @@ class State extends Compile
 
   constructor: (options={}) ->
     super
-    @tplRender = options.tplRender
+    @tplRender = options.tplRender # шаблонизация головного мозга
 
     ###*
     * Запуск контроллера. Применить приложение в соответсвующие состояние.
@@ -44,17 +44,17 @@ class State extends Compile
       if (cb is @empty) and (Object::toString.call(state) is '[object Function]')
         cb = state
         state='/'
-      unless @state.circle # не запущен
-        @compile() unless @layers
-        @log.info('empty layers') unless @layers.length
-        @emit 'start', state, cb
-      else # уже запущен, мутим очередь
+      if @state.circle and @state.circle.run # уже запущен, мутим очередь
         @log.debug('state queue')
         @state.circle.interrupt = true
         @once 'queue', =>
           @state state, cb
         listeners = _getListeners('queue', @)
         listeners.splice 0, listeners.length - @state.circle.queue
+      else # не запущен
+        @compile() unless @layers
+        @log.info('empty layers') unless @layers.length
+        @emit 'start', state, cb
 
     @state.runs = 0 # количество запусков
 
@@ -73,8 +73,9 @@ class State extends Compile
         length: @layers.length
         cb: (if cb then cb else null) # callback функция @state
         #@delay = 1 # размер паузы между циклами в милисекундах
-        timeout: (if options.timeout then options.timeout else 10000) # сколько может длиться
+        timeout: (if options.timeout then options.timeout else 10000) # угнать за 60 секунд
         time: Date.now() # время начала
+        run: true
       if @state.circle.state # совпавшее состояние слоя, может быть не полностью равным @state.circle.state
         i = @state.circle.length
         while --i >= 0 # firstCircle
@@ -96,23 +97,28 @@ class State extends Compile
     # Вставиться, запустить обработчики
     # Если слой виден, и не прошел проверки, но ни один другой слой его не скрыл, слой все равно должен скрыться
     @on 'circle', () ->
-      i = @state.circle.length
-      while --i >= 0
-        if @layers[i].status is 'queue'
-          @state.circle.num = i
-          @emit 'layer', @layers[i], i
-      restrictions = updateRestrictions(@state.circle, _getListeners('circle', @))
-      log.warn(restrictions) if restrictions
-      listeners = _getListeners('circle', @)
-      if listeners.length > 1 # появились дополнительные подписчики, только once для пропуска круга
-        @emit 'circle'
-      else if not @state.circle.loading
-        @emit 'end'
+      run = @state.runs
+      setTimeout(() => # сделай паузу, скушай твикс
+        if (@state.circle.run) and (run is @state.runs) # может уже остановиться
+          i = @state.circle.length
+          while --i >= 0
+            if @layers[i].status is 'queue'
+              @state.circle.num = i
+              @emit 'layer', @layers[i], i
+          restrictions = updateRestrictions(@state.circle, _getListeners('circle', @))
+          @log.warn(restrictions) if restrictions
+          listeners = _getListeners('circle', @)
+          if listeners.length > 1 # появились дополнительные подписчики, только once для пропуска круга
+              @emit 'circle'
+          else if not @state.circle.loading
+            @emit 'end'
+      , 0)
 
     @on 'end', ->
       @log.debug('end, circle.count: ' + @state.circle.count + ', number of runs: ' + @state.runs)
+      @state.circle.run = false
       @state.circle.cb()
-      delete @state.circle
+      #delete @state.circle
       @emit 'queue'
 
 #x>

@@ -3,12 +3,13 @@
 
 <head>
 	<meta charset='utf-8'>
-	<title>SuperController - тестовое приложение</title>
+	<title>layer-control - тестовое приложение</title>
 	<!-- Вспомогательные стили -->
-	<link rel='stylesheet' href='../node_modules/nodeunit/dist/browser/nodeunit.css'>
+	<link rel='stylesheet' href='../node_modules/nodeunit/share/nodeunit.css'>
 	<!-- Вспомогательные библиотеки -->
 	<script src='../node_modules/es6-promise/dist/promise-0.1.1.min.js'></script>
-	<script src='../node_modules/wolfy87-eventemitter/EventEmitter.min.js'></script>
+	<!-- <script src='../node_modules/wolfy87&#45;eventemitter/EventEmitter.min.js'></script> -->
+	<script src='../node_modules/eventemitter2/lib/eventemitter2.js'></script>
 	<script src='../node_modules/mustache/mustache.min.js'></script>
 	<script src='../vendor/coffee-script.js'></script>
 	<!-- Контроллер -->
@@ -23,7 +24,7 @@
 	<!-- Пользовательское приложение -->
 	<!-- <script type='text/coffeescript' src='../test/app.coffee'></script> -->
 	<!-- Тестирование -->
-	<script src='../node_modules/nodeunit/dist/browser/nodeunit.js'></script>
+	<script src='../node_modules/nodeunit/examples/browser/nodeunit.js'></script>
 	<script type='text/coffeescript' src='../test/module.coffee'></script>
 	<script type='text/coffeescript' src='../test/logger.coffee'></script>
 	<script type='text/coffeescript' src='../test/events.coffee'></script>
@@ -77,14 +78,14 @@
 	<div id='nodeunit'></div>
 	<script type='text/coffeescript'>
 		nodeunit.run({
-		module
-		logger
-		events
-		loader
-		selector
-		compile
-		state
-		layer
+			module
+			logger
+			events
+			loader
+			selector
+			compile
+			state
+			layer
 		}, document.getElementById('nodeunit'))
 	</script>
 </body>

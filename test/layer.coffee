@@ -20,7 +20,7 @@ exports.compileQuery = (test) ->
     index: {
       query: "wrong query"
       oncheck: (cb) ->
-        test.ok(false, 'no check')
+        test.ok(false, 'no oncheck')
         cb()
     }
   })
@@ -156,6 +156,93 @@ exports.checkLayer = (test) ->
   test.strictEqual controller.checkLayer(controller.layers[1]), 'no parent', 'no parent'
   controller.layers[0].show = true
   test.strictEqual controller.checkLayer(controller.layers[1]), "not inserted", 'not inserted'
+
+exports.badLayer = (test) ->
+  controller = new Layer(
+    logger: 'DEBUG',
+    $: $ || false,
+    tplRender: Mustache.render,
+    index:
+      HTML: "adf"
+      query: "#base_html"
+      label: "error_layer wow"
+      id: "213"
+  )
+  test.expect 2
+  controller.once "end", ->
+    test.equal controller.labels.wow[0].status, "wrong insert", "labels"
+    test.equal controller.layers.filter((value, index, array) -> if value.id is '213' then true)[0], controller.layers[0], "filter id"
+    test.done()
+  controller.state()
+
+exports.layer = (test) ->
+  controller = new Layer(
+    logger: 'DEBUG',
+    $: $ || false,
+    tplRender: Mustache.render,
+    index:
+      htmlString: "<div id=\"base_text\"></div>"
+      query: "#base_html"
+  )
+  test.expect 1
+  controller.once "end", ->
+    #test.equal controller.ids.length, controller.layers[0].length, "ids length"
+    test.ok(true)
+    test.done()
+  controller.state()
+
+exports.layer2 = (test) ->
+  controller = new Layer(
+    logger: 'DEBUG',
+    $: $ || false,
+    tplRender: Mustache.render,
+    index:
+      htmlString: "<div id=\"base_text\"></div>"
+      query: "#base_html"
+      childQueries:
+        "#base_text":
+          htmlString: "<div id=\"base_left\"></div>"
+          childStates:
+            "Страницы":
+              query: "#base_left"
+              htmlString: "state1 ok"
+            "Галерея":
+              query: "#base_left"
+              htmlString: "state2 ok"
+        "#noid":
+          htmlString: "123"
+  )
+  #test.expect 19
+  controller.once "end", ->
+    test.strictEqual controller.state.circle.run, false, 'circle.run false'
+    test.ok controller.layers[0].show, "layer 0 show |" + controller.layers[0].status
+    test.ok controller.layers[1].show, "layer 1 show |" + controller.layers[1].status + '|' + controller.layers[1].check
+    test.ok controller.layers[2].show, "layer 2 show"
+    test.ok not controller.layers[3].show, "layer 3 not show"
+    test.ok not controller.layers[4].show, "layer 4 not show"
+    test.strictEqual controller.state.runs, 1, 'check_count1'
+    setTimeout =>
+      controller.once "end", ->
+        test.equal controller.state.runs, 2, 'check_count2'
+        test.strictEqual controller.state.circle.run, false, 'circle.run2 false'
+        test.ok controller.layers[0].show, "layer 0 show"
+        test.ok controller.layers[1].show, "layer 1 show"
+        test.ok not controller.layers[2].show, "layer 2 not show |" + controller.layers[2].status + '|' + controller.layers[2].check
+        test.ok controller.layers[3].show, "layer 3 show"
+        test.ok not controller.layers[4].show, "layer 4 not show"
+        setTimeout =>
+          controller.once "end", ->
+            test.ok controller.layers[0].show, "layer 0 show"
+            test.ok controller.layers[1].show, "layer 1 show"
+            test.ok not controller.layers[2].show, "layer 2 not show"
+            test.ok not controller.layers[3].show, "layer 3 not show"
+            test.ok not controller.layers[4].show, "layer 4 not show"
+            test.done()
+          controller.state("/")
+        , 1
+      controller.state("/Галерея/")
+    , 1
+  controller.state("/Страницы/")
 
 ###
 exports.layer = (test) ->

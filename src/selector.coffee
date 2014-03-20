@@ -56,7 +56,7 @@ class Selector extends Loader
     * controller.$('sel'), controller.$('sel').find('sel2')
     * @return {Array||Object} NodeList Список элементов, NodeList.length.
     ###
-    @$ = options.$ || selector
+    @$ = options.$ || selector # селектор, вставка элементов в документ и в сознание
 
 #x>
 if not window?

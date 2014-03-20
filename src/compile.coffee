@@ -114,7 +114,7 @@ class Compile extends Selector
       status: 'queue'
       id: 0
     @layers.push newParentLayer
-    newParentLayer.id = @layers.length
+    newParentLayer.id = layer.id || @layers.length
     if layer.label
       layerLabels = layer.label.split(' ')
       for i in [0...layerLabels.length]

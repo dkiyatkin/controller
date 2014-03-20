@@ -26,10 +26,10 @@ class Logger extends Module
       log.history += '\n' + msg
       msg
   constructor: (options={}) ->
-    @log =
+    @log = # логгирование непонятных ситуаций
       history: ''
-      logger: options.logger || 'WARNING'
-      quiet: options.quiet || false
+      logger: options.logger || 'WARNING' # уровень серьезности
+      quiet: options.quiet || false # у стен есть уши
       debug: (msg...) -> _log(msg, 3, @)
       info: (msg...) -> _log(msg, 2, @)
       warn: (msg...) -> _log(msg, 1, @)

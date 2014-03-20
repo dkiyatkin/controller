@@ -1,13 +1,12 @@
 {
-  "name": "super-controller",
-  "version": "0.0.0",
+  "name": "layer-control",
+  "version": "0.0.1",
   "description": "JavaScript layers controller. Manage layers.",
   "main": "index.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
-    "test": "grunt nodeunit"
+    "test": "gulp nodeunit",
+    "make": "gulp make",
+    "test-server": "coffee lib/server.coffee"
   },
   "repository": {
     "type": "git",
@@ -24,26 +23,35 @@
   },
   "homepage": "https://github.com/dkiyatkin/controller",
   "devDependencies": {
-    "grunt": "~0.4.2",
-    "grunt-contrib-nodeunit": "~0.2.2",
-    "request": "~2.31.0",
-    "connect": "~2.12.0",
-    "mustache": "~0.8.1",
-    "wolfy87-eventemitter": "~4.2.6",
+    "connect": "~2.14.3",
     "es5-shim": "~2.3.0",
-    "nodeunit": "~0.8.4",
-    "inherits": "~2.0.1",
-    "grunt-contrib-coffee": "~0.8.2",
-    "grunt-replace": "~0.5.1",
-    "grunt-contrib-uglify": "~0.3.2",
-    "grunt-umd": "~1.6.1",
+    "grunt": "~0.4.4",
     "grunt-contrib-clean": "~0.5.0",
-    "source-map-support": "~0.2.5"
+    "grunt-contrib-coffee": "~0.10.1",
+    "grunt-contrib-nodeunit": "~0.3.3",
+    "grunt-contrib-uglify": "~0.4.0",
+    "grunt-replace": "~0.7.3",
+    "grunt-umd": "~1.7.3",
+    "gulp": "^3.5.6",
+    "gulp-clean": "^0.2.4",
+    "gulp-coffee": "^1.4.1",
+    "gulp-concat": "^2.2.0",
+    "gulp-nodeunit": "0.0.5",
+    "gulp-nodeunit-runner": "^0.1.1",
+    "gulp-uglify": "^0.2.1",
+    "gulp-wrap-umd": "^0.2.0",
+    "inherits": "~2.0.1",
+    "mustache": "~0.8.1",
+    "nodeunit": "~0.8.6",
+    "request": "~2.34.0",
+    "source-map-support": "~0.2.5",
+    "wolfy87-eventemitter": "~4.2.6"
   },
   "dependencies": {
     "es6-promise": "~0.1.1",
     "test-logger": "0.0.2",
     "xmlhttprequest": "~1.6.0",
-    "cheerio": "~0.13.1"
+    "cheerio": "~0.13.1",
+    "eventemitter2": "~0.4.13"
   }
 }

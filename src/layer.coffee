@@ -8,8 +8,9 @@ else
 class Layer extends State
 
   _busyQueries = (node, queries) ->
-    for own query of queries
-      if node.find(queries[query]).length
+    i = queries.length
+    while --i >= 0
+      if node.find(queries[queries[i]]).length
         return true
     return false
 
@@ -92,7 +93,7 @@ class Layer extends State
     if not layer.node.length # вставляется ли слой
       return 'not inserted'
     if not layer.show
-      if _busyQueries(layer.node, @state.circle.queries) # нет ли в запросе слоя других занятых, этот слой должен быть скрыт
+      if _busyQueries(layer.node, Object.keys(@state.circle.queries)) # нет ли в запросе слоя других занятых, этот слой должен быть скрыт
         return 'busy tags'
     if not _stateOk(layer.regState, @state.circle.state) # подходит ли state
       return 'state mismatch'
