@@ -1,7 +1,10 @@
+#x>
 unless window?
   Module = require('../src/common.coffee')
 else
   Module = window.Module
+#<x
+
 ###*
 * Интерфейс управления отладочными сообщениями.
 * Примеры:

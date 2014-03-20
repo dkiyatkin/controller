@@ -1,0 +1,19 @@
+{
+  "name": "layer-control",
+  "repo": "dkiyatkin/controller",
+  "description": "JavaScript layers controller. Manage layers.",
+  "version": "0.0.1",
+  "keywords": [
+    "layers",
+    "controller"
+  ],
+  "dependencies": {
+    "asyncly/EventEmitter2": "*"
+  },
+  "development": {},
+  "license": "MIT",
+  "main": "dist/layer-control.min.js",
+  "scripts": [
+    "dist/layer-control.min.js"
+  ]
+}

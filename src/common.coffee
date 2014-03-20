@@ -3,6 +3,7 @@ if not window?
   EventEmitter = require('eventemitter2').EventEmitter2
 else
   EventEmitter = window.EventEmitter2
+console.log 123
 #<x
 
 moduleKeywords = ['extended', 'included']

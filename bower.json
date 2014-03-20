@@ -1,0 +1,23 @@
+{
+  "name": "layer-control",
+  "version": "0.0.1",
+  "homepage": "https://github.com/dkiyatkin/controller",
+  "authors": [
+    "Dmitriy Kiyatkin <info@dkiyatkin.com> (http://dkiyatkin.com/)"
+  ],
+  "description": "JavaScript layers controller. Manage layers.",
+  "main": "dist/layer-control.min.js",
+  "keywords": [
+    "layers",
+    "controller"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "bower_components",
+    "components",
+    "node_modules"
+  ],
+  "dependencies": {
+    "eventemitter2": "~0.4.13"
+  }
+}
