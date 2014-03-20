@@ -1,4 +1,4 @@
-app = new SuperController({
+app = new LayerControl({
   logger: 'DEBUG'
   layers: {
   }
