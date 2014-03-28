@@ -1,8 +1,8 @@
 {
   "name": "layer-control",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "JavaScript layers controller. Manage layers.",
-  "main": "index.js",
+  "main": "lib/connect.coffee",
   "scripts": {
     "test": "gulp nodeunit",
     "make": "gulp make",

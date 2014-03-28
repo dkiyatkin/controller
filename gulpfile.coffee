@@ -29,6 +29,8 @@ testFiles = [
   'test/compile.coffee'
   'test/state.coffee'
   'test/layer.coffee'
+  'test/nav.coffee'
+  'test/cache.coffee'
 ]
 srcFiles = [
   'src/common.coffee'
@@ -39,6 +41,8 @@ srcFiles = [
   'src/compile.coffee'
   'src/state.coffee'
   'src/layer.coffee'
+  'src/nav.coffee'
+  'src/cache.coffee'
 ]
 
 gulp.task 'nodeunit', ->

@@ -135,9 +135,9 @@ class Loader extends Logger
     ###*
     * Объект хранит кэш-данные.
     * Примеры:
-    * infra.load.cache.css['css-code'] // если true, то указанный css-код применился.
-    * infra.load.cache.text['path/to/file'] // возвращает загруженный текст по указанному пути.
-    * infra.load.cache.data['path/to/file'] // возвращает объект, полученный из текста по указанному пути.
+    * controller.load.cache.css['css-code'] // если true, то указанный css-код применился.
+    * controller.load.cache.text['path/to/file'] // возвращает загруженный текст по указанному пути.
+    * controller.load.cache.data['path/to/file'] // возвращает объект, полученный из текста по указанному пути.
     ###
     @load.cache =
       css: {}

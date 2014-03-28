@@ -9,7 +9,7 @@
 	<!-- Вспомогательные библиотеки -->
 	<script src='../node_modules/es6-promise/dist/promise-0.1.1.min.js'></script>
 	<script src='../node_modules/eventemitter2/lib/eventemitter2.js'></script>
-	<script src='../node_modules/mustache/mustache.min.js'></script>
+	<script src='../node_modules/mustache/mustache.js'></script>
 	<script src='../vendor/coffee-script.js'></script>
 	<!-- Контроллер -->
 	<script type='text/coffeescript' src='../src/common.coffee'></script>
@@ -20,6 +20,8 @@
 	<script type='text/coffeescript' src='../src/compile.coffee'></script>
 	<script type='text/coffeescript' src='../src/state.coffee'></script>
 	<script type='text/coffeescript' src='../src/layer.coffee'></script>
+	<script type='text/coffeescript' src='../src/nav.coffee'></script>
+	<script type='text/coffeescript' src='../src/cache.coffee'></script>
 	<!-- Пользовательское приложение -->
 	<!-- <script type='text/coffeescript' src='../test/app.coffee'></script> -->
 	<!-- Тестирование -->
@@ -32,6 +34,8 @@
 	<script type='text/coffeescript' src='../test/compile.coffee'></script>
 	<script type='text/coffeescript' src='../test/state.coffee'></script>
 	<script type='text/coffeescript' src='../test/layer.coffee'></script>
+	<script type='text/coffeescript' src='../test/nav.coffee'></script>
+	<script type='text/coffeescript' src='../test/cache.coffee'></script>
 </head>
 
 <body>
@@ -85,6 +89,8 @@
 			compile
 			state
 			layer
+			nav
+			cache
 		}, document.getElementById('nodeunit'))
 	</script>
 </body>
