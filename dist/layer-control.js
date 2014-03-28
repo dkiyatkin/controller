@@ -1,9 +1,9 @@
 /*!
- * layer-control v0.0.1 (https://github.com/dkiyatkin/controller)
+ * layer-control v0.0.2 (https://github.com/dkiyatkin/controller)
  * Copyright (c) 2014 Dmitriy Kiyatkin <info@dkiyatkin.com> (http://dkiyatkin.com)
  * Licensed under MIT (https://github.com/dkiyatkin/controller/raw/master/LICENSE)
  */
-var Compile, Layer, Loader, Logger, Module, Promise, Selector, State, mixOf, moduleKeywords,
+var Cache, Compile, Layer, Loader, Logger, Module, Nav, Promise, Selector, State, mixOf, moduleKeywords,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
@@ -361,9 +361,9 @@ Loader = (function(_super) {
     /**
     * Объект хранит кэш-данные.
     * Примеры:
-    * infra.load.cache.css['css-code'] // если true, то указанный css-код применился.
-    * infra.load.cache.text['path/to/file'] // возвращает загруженный текст по указанному пути.
-    * infra.load.cache.data['path/to/file'] // возвращает объект, полученный из текста по указанному пути.
+    * controller.load.cache.css['css-code'] // если true, то указанный css-код применился.
+    * controller.load.cache.text['path/to/file'] // возвращает загруженный текст по указанному пути.
+    * controller.load.cache.data['path/to/file'] // возвращает объект, полученный из текста по указанному пути.
      */
     this.load.cache = {
       css: {},
@@ -1212,6 +1212,382 @@ Layer = (function(_super) {
   return Layer;
 
 })(State);
+
+Nav = (function(_super) {
+
+  /*
+  * Возвращает отформатированный вариант состояния.
+  *
+  * Убираеются двойные слэши, добавляются слэш в начале и в конце.
+  *
+  * @param {String} pathname Строка с именем состояния.
+  * @return {String} Отформатированный вариант состояния.
+   */
+  var getState, handler, ignore_protocols, parentA, setHrefs;
+
+  __extends(Nav, _super);
+
+  getState = function(pathname) {
+    var now_location;
+    if (!pathname) {
+      pathname = "/";
+    }
+    now_location = decodeURIComponent(location.pathname);
+    pathname = decodeURIComponent(pathname);
+    pathname = pathname.replace(/#.+/, "");
+    if (pathname[0] !== "/") {
+      pathname = now_location + "/" + pathname;
+    }
+    pathname = pathname.replace(/\/{2,}/g, "/");
+    return pathname;
+  };
+
+  parentA = function(targ) {
+    if (targ.nodeName === "A") {
+      return targ;
+    } else {
+      if ((!targ.parentNode) || (targ.parentNode === "HTML")) {
+        return false;
+      } else {
+        return parentA(targ.parentNode);
+      }
+    }
+  };
+
+  ignore_protocols = ["^javascript:", "^mailto:", "^http://", "^https://", "^ftp://", "^//"];
+
+  handler = function(e) {
+    var href, i, ignore, targ;
+    e = e || window.event;
+    if (!e.metaKey && !e.shiftKey && !e.altKey && !e.ctrlKey) {
+      targ = e.target || e.srcElement;
+      targ = parentA(targ);
+      if (targ) {
+        href = targ.getAttribute("href");
+        ignore = false;
+        if (href) {
+          if (!targ.getAttribute("target")) {
+            i = ignore_protocols.length;
+            while (--i >= 0) {
+              if (RegExp(ignore_protocols[i], "gim").test(href)) {
+                ignore = true;
+              }
+            }
+            if (!ignore) {
+              try {
+                if (e.preventDefault) {
+                  e.preventDefault();
+                } else {
+                  e.returnValue = false;
+                }
+                this.state = this.getState(href);
+                return this.check((function(_this) {
+                  return function(cb) {
+                    _this.hash = targ.hash;
+                    return cb();
+                  };
+                })(this));
+              } catch (_error) {
+                e = _error;
+                return window.location = href;
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  setHrefs = function() {
+    var a, i, _results;
+    a = this.$("a");
+    i = a.length;
+    _results = [];
+    while (--i >= 0) {
+      _results.push(a[i].onclick = handler);
+    }
+    return _results;
+  };
+
+  function Nav(options) {
+    var nowState;
+    if (options == null) {
+      options = {};
+    }
+    Nav.__super__.constructor.apply(this, arguments);
+    this.getState = getState;
+    if (options.links == null) {
+      options.links = true;
+    }
+    if (options.links) {
+      setHrefs();
+      this.on("start", function() {
+        if (!this.noscroll) {
+          window.scrollTo(0, 0);
+        }
+        return this.noscroll = false;
+      });
+      this.on("end", function() {
+        return setHrefs();
+      });
+    }
+    if (options.addressBar == null) {
+      options.addressBar = true;
+    }
+    if (options.addressBar) {
+      this.state = this.getState(location.pathname);
+      this.log.debug("setting onpopstate event for back and forward buttons");
+      setTimeout(((function(_this) {
+        return function() {
+          return window.onpopstate = function(e) {
+            var nowState;
+            _this.log.debug("onpopstate");
+            if (!_this.hash) {
+              nowState = _this.getState(location.pathname);
+              _this.state = nowState;
+              return _this.check(function(cb) {
+                _this.hash = location.hash;
+                return cb();
+              });
+            }
+          };
+        };
+      })(this)), 1000);
+      nowState = void 0;
+      this.on("start", function() {
+        nowState = this.getState(location.pathname);
+        if (this.state !== nowState) {
+          this.log.debug("push state " + this.state + " replace hash " + this.hash);
+          return history.pushState(null, null, this.state);
+        }
+      });
+      this.on("end", function() {
+        if (this.state !== nowState) {
+          if (this.hash) {
+            location.replace(this.hash);
+          }
+        } else {
+          this.log.debug("replace state " + this.state + " push hash " + this.hash);
+          history.replaceState(null, null, this.state);
+          if (this.hash) {
+            location.href = this.hash;
+          }
+        }
+        return this.hash = "";
+      });
+    }
+  }
+
+  return Nav;
+
+})(Layer);
+
+Cache = (function(_super) {
+  var checkExists, empty2, getCache, head, oncheckTplOptions, reparseAll, reparseLayer;
+
+  __extends(Cache, _super);
+
+  empty2 = function() {};
+
+  getCache = function() {
+    var Controller, e, i, layer, _results;
+    Controller = window.Controller;
+    this.load.cache = Controller.server.cache;
+    i = this.layers.length;
+    _results = [];
+    while (--i >= 0) {
+      layer = this.layers[i];
+      layer.show = Controller.server.visibleLayers[i];
+      if (layer.show) {
+        if (!layer.data && layer.json && this.load.cache.data[layer.json]) {
+          layer.data = this.load.cache.data[layer.json];
+        }
+        if (!layer.htmlString && !layer.tplString && layer.tpl && this.load.cache.text[layer.tpl]) {
+          layer.tplString = this.load.cache.text[layer.tpl];
+        }
+        layer.regState = this.state.circle.state.match(new RegExp(layer.state, "im"));
+        try {
+          _results.push(layer.onshow.bind(layer)(empty2));
+        } catch (_error) {
+          e = _error;
+          _results.push(this.log.error("onshow() " + i + " " + e));
+        }
+      } else {
+        _results.push(void 0);
+      }
+    }
+    return _results;
+  };
+
+  reparseLayer = function(layer) {
+    var i, _results;
+    layer.show = false;
+    if (layer.json) {
+      layer.data = false;
+    }
+    if (layer.tpl) {
+      layer.tplString = "";
+      layer.htmlString = "";
+    } else {
+      if (layer.tplString) {
+        layer.htmlString = "";
+      }
+    }
+    if (layer.childLayers) {
+      i = layer.childLayers.length;
+      _results = [];
+      while (--i >= 0) {
+        _results.push(layer.childLayers[i].show = false);
+      }
+      return _results;
+    }
+  };
+
+  reparseAll = function() {
+    var i, _results;
+    i = Cache.layers.length;
+    _results = [];
+    while (--i >= 0) {
+      _results.push(Cache.reparseLayer(Cache.layers[i]));
+    }
+    return _results;
+  };
+
+
+  /*
+                  var externals = 0;
+                  var waitExternals = function(cb) {
+                          if (externals) {
+                                  setTimeout(function() {
+                                          waitExternals(cb)
+                                  }, 100);
+                          } else cb();
+                  }
+  
+                  @externalLayer = function(path) {
+                          externals++;
+                          var layer = {};
+                          @load(path + 'layer.js', function(err, ans) {
+                                  externals--;
+                                  eval(ans);
+                          });
+                          return layer;
+                  }
+                  // Переопределим compile, для загрузки externals
+                  var compile = @compile;
+                  @compile = function(index, cb) {
+                          waitExternals(function() {
+                                  compile(index, cb);
+                          });
+                  }
+   */
+
+  checkExists = function(state) {
+    var exist, i;
+    if (!this.layers) {
+      this.compile();
+    }
+    exist = void 0;
+    i = this.layers.length;
+    while (--i >= 0) {
+      exist = new RegExp(this.layers[i].state).test(state);
+      if (exist) {
+        break;
+      }
+    }
+    return exist;
+  };
+
+  oncheckTplOptions = function(layer) {
+    if (!layer) {
+      layer = this;
+    }
+    layer.tpl = this.tplRender(layer.tpl, layer);
+    return layer.json = this.tplRender(layer.json, layer);
+  };
+
+  head = function(headObj) {
+    this.on("start", (function(_this) {
+      return function() {
+        _this.meta = {};
+        _this.meta.keywords = headObj.meta.keywords;
+        _this.meta.description = headObj.meta.description;
+        _this.statusCode = 200;
+        return _this.title = false;
+      };
+    })(this));
+    return this.on("end", (function(_this) {
+      return function() {
+        var $head, description, keywords, meta;
+        if (!_this.title) {
+          if (_this.statusCode === 404) {
+            _this.title = headObj.title["404"];
+          } else if (_this.state.circle.state === "/") {
+            _this.title = headObj.title.main;
+          } else {
+            _this.title = _this.state.circle.state.replace(/\/+$/, "").replace(/^\/+/, "").split("/").reverse().join(" / ") + headObj.title.sub;
+          }
+          _this.lastStatusCode = _this.statusCode;
+        }
+        _this.document.title = _this.title;
+        if (!_this.meta.keywords) {
+          _this.meta.keywords = "";
+        }
+        if (!_this.meta.description) {
+          _this.meta.description = "";
+        }
+        $head = _this.$("head");
+        description = _this.$("meta[name=description]");
+        keywords = _this.$("meta[name=keywords]");
+        if (keywords && keywords.length !== 0) {
+          $head.removeChild(keywords);
+        }
+        if (description && description.length !== 0) {
+          $head.removeChild(description);
+        }
+        meta = _this.document.createElement("meta");
+        meta.setAttribute("name", 'description');
+        meta.setAttribute("content", _this.meta.description);
+        $head.appendChild(meta);
+        meta = _this.document.createElement("meta");
+        meta.setAttribute("name", 'keywords');
+        meta.setAttribute("content", _this.meta.keywords);
+        return $head.appendChild(meta);
+      };
+    })(this));
+  };
+
+  function Cache(options) {
+    if (options == null) {
+      options = {};
+    }
+    Cache.__super__.constructor.apply(this, arguments);
+    this.head = head;
+    this.oncheckTplOptions = oncheckTplOptions;
+    this.checkExists = checkExists;
+    this.reparseAll = reparseAll;
+    this.reparseLayer = reparseLayer;
+    if (options.cache == null) {
+      options.cache = true;
+    }
+    if (options.cache) {
+      this.once("start", (function(_this) {
+        return function() {
+          var e;
+          try {
+            return getCache();
+          } catch (_error) {
+            e = _error;
+            return _this.log.warn("fail cache");
+          }
+        };
+      })(this));
+    }
+  }
+
+  return Cache;
+
+})(Nav);
 
 /*
 //# sourceMappingURL=layer-control.map
