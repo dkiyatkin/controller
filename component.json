@@ -2,7 +2,7 @@
   "name": "layer-control",
   "repo": "dkiyatkin/controller",
   "description": "JavaScript layers controller. Manage layers.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "layers",
     "controller"
