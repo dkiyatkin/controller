@@ -1,9 +1,11 @@
+#x>
 unless window?
   Logger = require('./logger.coffee')
   Promise = require('es6-promise').Promise
 else
   Logger = window.Logger
   Promise = window.Promise
+#<x
 
 class Loader extends Logger
 

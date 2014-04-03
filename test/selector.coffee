@@ -22,7 +22,7 @@ _setSelector = (selector, test) ->
 
 exports.setSelector = (test) ->
   if not window?
-    load('/test/index.html', {}, (err, ans) ->
+    load('/test/test.html', {}, (err, ans) ->
       _setSelector(new Selector({$:cheerio.load(ans)}), test)
     )
   else

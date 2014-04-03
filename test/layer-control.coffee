@@ -1,21 +1,22 @@
 #x>
 if not window?
   fs = require('fs')
-  Nav = require('../src/nav.coffee')
+  LayerControl = require('../src/layer-control.coffee')
   cheerio = require('cheerio')
   load = require('../lib/load.coffee')
   $ = cheerio.load(fs.readFileSync('./test/test.html'))
   Mustache = require('mustache')
 else
   window.exports = {}
-  window.nav = exports
-  Nav = window.Nav
+  window.layerControl = exports
+  LayerControl = window.LayerControl
   Mustache = window.Mustache
 #<x
 
-exports.navInit = (test) ->
-  controller = new Nav({
+exports.layerControlInit = (test) ->
+  controller = new LayerControl({
     links: false
     addressBar: false
   })
   test.done()
+

@@ -4,7 +4,7 @@ if not window?
   Cache = require('../src/cache.coffee')
   cheerio = require('cheerio')
   load = require('../lib/load.coffee')
-  $ = cheerio.load(fs.readFileSync('./test/index.html'))
+  $ = cheerio.load(fs.readFileSync('./test/test.html'))
   Mustache = require('mustache')
 else
   window.exports = {}

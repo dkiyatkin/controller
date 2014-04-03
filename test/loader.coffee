@@ -9,7 +9,7 @@ else
 
 exports.loadFile = (test) ->
   test.expect 4
-  text_file = "/test/index.html"
+  text_file = "/test/test.html"
   if window?
     loader = new Loader()
   else

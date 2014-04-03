@@ -31,6 +31,8 @@ testFiles = [
   'test/layer.coffee'
   'test/nav.coffee'
   'test/cache.coffee'
+  'test/layer-control.coffee'
+  'test/connect.coffee'
 ]
 srcFiles = [
   'src/common.coffee'
@@ -43,6 +45,7 @@ srcFiles = [
   'src/layer.coffee'
   'src/nav.coffee'
   'src/cache.coffee'
+  'src/layer-control.coffee'
 ]
 
 gulp.task 'nodeunit', ->
@@ -52,7 +55,7 @@ gulp.task 'coffee', ['clean'], ->
   gulp.src(srcFiles)
     .pipe(replace(/#x>[\s\S]+?#<x/gim, '')) # replace
     .pipe(concat('layer-control.coffee')) # concat
-    .pipe(coffee({bare: true, sourceMap: true})) # coffee
+    .pipe(coffee({bare: false, sourceMap: true})) # coffee
     # .pipe(wrap({ namespace: 'LayerControl' })) # umd
     .pipe(rename((path) ->
       if path.extname is '.map'
