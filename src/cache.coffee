@@ -147,7 +147,7 @@ class Cache extends Nav
     @reparseAll = reparseAll
     @reparseLayer = reparseLayer
     #if not options.title? then options.title = true
-    if not options.cache? then options.cache = true
+    if not options.cache? then options.cache = false
     #var controller_server_cache = document.getElementById('controller_server_cache');
     #controller_server_cache.parentNode.removeChild(controller_server_cache);
     if options.cache

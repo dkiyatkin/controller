@@ -107,7 +107,7 @@ class Layer extends State
     @once 'circle', => # пропустить круг
       if @state.circle.interrupt
         @log.debug "check interrupt 1"
-        #@emit 'circle'
+        @emit 'circle'
       else
         @state.circle.loading++
         @externalLayer layer, =>
@@ -116,26 +116,26 @@ class Layer extends State
             layer.status = 'insert'
             if layer.show
               @state.circle.loading--
-              #@emit 'circle'
+              @emit 'circle'
             else
               @loadLayer layer, (err) =>
                 if err
                   @log.error "layer can not be inserted", layer.id
                   layer.status = 'wrong insert'
                   @state.circle.loading--
-                  #@emit 'circle'
+                  @emit 'circle'
                 else
                   if @state.circle.interrupt
                     @log.debug "check interrupt 2"
                     @state.circle.loading--
-                    #@emit 'circle'
+                    @emit 'circle'
                   else
                     @$(layer.query).html(layer.htmlString)
                     layer.lastState = @state.circle.state
                     layer.show = true
                     layer.onshow =>
                       @state.circle.loading--
-                      #@emit 'circle'
+                      @emit 'circle'
 
   # скрыть слой и всех его потомков
   disableLayer = (layer) ->
@@ -149,6 +149,7 @@ class Layer extends State
 
   constructor: (options={}) ->
     super
+    @tplRender = options.tplRender || (Mustache.render if Mustache?)
     @getLayerTemplate = getLayerTemplate
     @getLayerData = getLayerData
     @loadLayer = loadLayer

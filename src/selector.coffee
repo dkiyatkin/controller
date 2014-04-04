@@ -9,7 +9,7 @@ else
 class Selector extends Loader
 
   html = (htmlString) ->
-    if htmlString
+    if htmlString?
       if @.length?
         i = @length
         while --i >= 0

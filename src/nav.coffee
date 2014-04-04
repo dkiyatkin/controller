@@ -56,20 +56,20 @@ class Nav extends Layer
             unless ignore
               try
                 (if e.preventDefault then e.preventDefault() else (e.returnValue = false))
-                @state = @getState(href)
-                @check (cb) =>
+                @state @getState(href), =>
                   @hash = targ.hash
-                  cb()
               #var x = window.scrollY; var y = window.scrollX;
               catch e
+                console.error e
                 window.location = href
 
   # Подмена всех ссылок и осуществление переходов по страницам.
-  setHrefs = ->
-    a = @$("a")
-    i = a.length
+  setLinks: ->
+    $a = @$("a")
+    i = $a.length
     while --i >= 0
-      a[i].onclick = handler
+      $a[i].onclick = handler
+    return $a
 
   constructor: (options={}) ->
     super
@@ -77,39 +77,36 @@ class Nav extends Layer
     # по умолчанию ссылки включаются
     if not options.links? then options.links = true
     if options.links
-      setHrefs()
+      @setLinks()
       @on "start", ->
         window.scrollTo 0, 0 unless @noscroll
         @noscroll = false
       @on "end", -> # Слои обработались
-        setHrefs()
+        @setLinks()
     # Включает управление адресной строкой
     if not options.addressBar? then options.addressBar = true
     if options.addressBar
-      @state = @getState(location.pathname)
       @log.debug("setting onpopstate event for back and forward buttons")
       setTimeout (=>
         window.onpopstate = (e) => # кнопки вперед и назад и изменение хэштэга
           @log.debug("onpopstate")
           unless @hash
             nowState = @getState(location.pathname)
-            @state = nowState
-            @check (cb) =>
+            @state nowState, =>
               @hash = location.hash
-              cb()
       ), 1000 # chrome bug
       nowState = undefined
       @on "start", -> # менять location.state в начале check # изменение адресной строки
         nowState = @getState(location.pathname)
-        unless @state is nowState # изменилась
-          @log.debug "push state " + @state + " replace hash " + @hash
-          history.pushState null, null, @state
+        unless @state.circle.state is nowState # изменилась
+          @log.debug "push state " + @state.circle.state + " replace hash " + @hash
+          history.pushState null, null, @state.circle.state
       @on "end", -> # Слои обработались # менять location.hash в конце check
-        unless @state is nowState
+        unless @state.circle.state is nowState
           location.replace @hash if @hash
         else # очистить адрес от хэша
-          @log.debug "replace state " + @state + " push hash " + @hash
-          history.replaceState null, null, @state
+          @log.debug "replace state " + @state.circle.state + " push hash " + @hash
+          history.replaceState null, null, @state.circle.state
           location.href = @hash if @hash
         @hash = ""
 

@@ -1,1 +1,14 @@
-{}
+{
+	"query": "#base_html",
+	"htmlString": "<article></article>",
+	"childQueries": {
+		"article": {
+			"tpl": "/test/templates/block.tpl",
+			"childQueries": {
+				"#newlayer": {
+					"htmlString": "hello world"
+				}
+			}
+		}
+	}
+}

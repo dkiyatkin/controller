@@ -4,12 +4,45 @@
 <head>
 	<meta charset='utf-8'>
 	<title>layer-control - тестовое приложение #2</title>
+	<script src='../node_modules/es6-promise/dist/promise-0.1.1.min.js'></script>
 	<script src='../node_modules/eventemitter2/lib/eventemitter2.js'></script>
+	<script src='../node_modules/mustache/mustache.js'></script>
 	<script>window.EventEmitter = window.EventEmitter2;</script>
 	<script src='../dist/layer-control.js'></script>
 </head>
 
 <body>
+	<div id='base_html'>
+	</div>
+	<script>
+		var controller = new window.LayerControl({
+			logger: "DEBUG",
+			index: {
+				"query": "#base_html",
+				"htmlString": "<article></article>",
+				"childQueries": {
+					"article": {
+						"tpl": "/test/templates/block.tpl",
+						"childQueries": {
+							"#newlayer": {
+								"htmlString": "hello world",
+								"state": "^/1$"
+							}
+						}
+					}
+				},
+				"childStates": {
+					"Страница": {
+						"htmlString": "Страница",
+						"query": "#newlayer"
+					}
+				}
+			},
+			addressBar: false
+		});
+		controller.state('/');
+		// controller.state('/Страница');
+	</script>
 </body>
 
 </html>

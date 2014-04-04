@@ -539,7 +539,7 @@
 
     html = function(htmlString) {
       var i;
-      if (htmlString) {
+      if (htmlString != null) {
         if (this.length != null) {
           i = this.length;
           while (--i >= 0) {
@@ -1131,7 +1131,8 @@
       return this.once('circle', (function(_this) {
         return function() {
           if (_this.state.circle.interrupt) {
-            return _this.log.debug("check interrupt 1");
+            _this.log.debug("check interrupt 1");
+            return _this.emit('circle');
           } else {
             _this.state.circle.loading++;
             return _this.externalLayer(layer, function() {
@@ -1139,23 +1140,27 @@
                 layer.nowState = _this.state.circle.state;
                 layer.status = 'insert';
                 if (layer.show) {
-                  return _this.state.circle.loading--;
+                  _this.state.circle.loading--;
+                  return _this.emit('circle');
                 } else {
                   return _this.loadLayer(layer, function(err) {
                     if (err) {
                       _this.log.error("layer can not be inserted", layer.id);
                       layer.status = 'wrong insert';
-                      return _this.state.circle.loading--;
+                      _this.state.circle.loading--;
+                      return _this.emit('circle');
                     } else {
                       if (_this.state.circle.interrupt) {
                         _this.log.debug("check interrupt 2");
-                        return _this.state.circle.loading--;
+                        _this.state.circle.loading--;
+                        return _this.emit('circle');
                       } else {
                         _this.$(layer.query).html(layer.htmlString);
                         layer.lastState = _this.state.circle.state;
                         layer.show = true;
                         return layer.onshow(function() {
-                          return _this.state.circle.loading--;
+                          _this.state.circle.loading--;
+                          return _this.emit('circle');
                         });
                       }
                     }
@@ -1185,6 +1190,7 @@
         options = {};
       }
       Layer.__super__.constructor.apply(this, arguments);
+      this.tplRender = options.tplRender || (typeof Mustache !== "undefined" && Mustache !== null ? Mustache.render : void 0);
       this.getLayerTemplate = getLayerTemplate;
       this.getLayerData = getLayerData;
       this.loadLayer = loadLayer;
@@ -1216,7 +1222,7 @@
     * @param {String} pathname Строка с именем состояния.
     * @return {String} Отформатированный вариант состояния.
      */
-    var getState, handler, ignore_protocols, parentA, setHrefs;
+    var getState, handler, ignore_protocols, parentA;
 
     __extends(Nav, _super);
 
@@ -1273,15 +1279,14 @@
                   } else {
                     e.returnValue = false;
                   }
-                  this.state = this.getState(href);
-                  return this.check((function(_this) {
-                    return function(cb) {
-                      _this.hash = targ.hash;
-                      return cb();
+                  return this.state(this.getState(href), (function(_this) {
+                    return function() {
+                      return _this.hash = targ.hash;
                     };
                   })(this));
                 } catch (_error) {
                   e = _error;
+                  console.error(e);
                   return window.location = href;
                 }
               }
@@ -1291,15 +1296,14 @@
       }
     };
 
-    setHrefs = function() {
-      var a, i, _results;
-      a = this.$("a");
-      i = a.length;
-      _results = [];
+    Nav.prototype.setLinks = function() {
+      var $a, i;
+      $a = this.$("a");
+      i = $a.length;
       while (--i >= 0) {
-        _results.push(a[i].onclick = handler);
+        $a[i].onclick = handler;
       }
-      return _results;
+      return $a;
     };
 
     function Nav(options) {
@@ -1313,7 +1317,7 @@
         options.links = true;
       }
       if (options.links) {
-        setHrefs();
+        this.setLinks();
         this.on("start", function() {
           if (!this.noscroll) {
             window.scrollTo(0, 0);
@@ -1321,14 +1325,13 @@
           return this.noscroll = false;
         });
         this.on("end", function() {
-          return setHrefs();
+          return this.setLinks();
         });
       }
       if (options.addressBar == null) {
         options.addressBar = true;
       }
       if (options.addressBar) {
-        this.state = this.getState(location.pathname);
         this.log.debug("setting onpopstate event for back and forward buttons");
         setTimeout(((function(_this) {
           return function() {
@@ -1337,10 +1340,8 @@
               _this.log.debug("onpopstate");
               if (!_this.hash) {
                 nowState = _this.getState(location.pathname);
-                _this.state = nowState;
-                return _this.check(function(cb) {
-                  _this.hash = location.hash;
-                  return cb();
+                return _this.state(nowState, function() {
+                  return _this.hash = location.hash;
                 });
               }
             };
@@ -1349,19 +1350,19 @@
         nowState = void 0;
         this.on("start", function() {
           nowState = this.getState(location.pathname);
-          if (this.state !== nowState) {
-            this.log.debug("push state " + this.state + " replace hash " + this.hash);
-            return history.pushState(null, null, this.state);
+          if (this.state.circle.state !== nowState) {
+            this.log.debug("push state " + this.state.circle.state + " replace hash " + this.hash);
+            return history.pushState(null, null, this.state.circle.state);
           }
         });
         this.on("end", function() {
-          if (this.state !== nowState) {
+          if (this.state.circle.state !== nowState) {
             if (this.hash) {
               location.replace(this.hash);
             }
           } else {
-            this.log.debug("replace state " + this.state + " push hash " + this.hash);
-            history.replaceState(null, null, this.state);
+            this.log.debug("replace state " + this.state.circle.state + " push hash " + this.hash);
+            history.replaceState(null, null, this.state.circle.state);
             if (this.hash) {
               location.href = this.hash;
             }
@@ -1561,7 +1562,7 @@
       this.reparseAll = reparseAll;
       this.reparseLayer = reparseLayer;
       if (options.cache == null) {
-        options.cache = true;
+        options.cache = false;
       }
       if (options.cache) {
         this.once("start", (function(_this) {
