@@ -57,6 +57,7 @@ class Selector extends Loader
     * @return {Array||Object} NodeList Список элементов, NodeList.length.
     ###
     @$ = options.$ || selector # селектор, вставка элементов в документ и в сознание
+    @document = window.document if window? # документ документ документ
 
 #x>
 if not window?

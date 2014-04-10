@@ -34,20 +34,30 @@ exports.compileQuery = (test) ->
   )
 
 exports.compileLayerListeners = (test) ->
-  test.expect 2
-  controller = new Layer(
+  test.expect 3
+
+  class Layer2 extends Layer
+    constructor: (options={}) ->
+      super
+      @functions =
+        testStringFunction: (cb) ->
+          test.ok true, 'oncheck'
+          cb()
+
+  controller = new Layer2(
     $: $ || false,
     logger: 'DEBUG',
     index:
-      query: "wrong query"
+      query: 'wrong query'
+      oncheck: 'testStringFunction'
       onshow: (cb) -> # не запустится
-        test.ok true, "onshow"
+        test.ok true, 'onshow'
         cb()
   )
   controller.state()
 
   testfunc = ->
-    test.ok true, "onchecked"
+    test.ok true, 'onchecked'
 
   controller.layers[0].oncheck(testfunc)
   controller.layers[0].onshow(test.done)

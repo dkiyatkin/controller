@@ -68,7 +68,7 @@ class Compile extends Selector
         else cb()
     else cb()
 
-  compile: (index=@options.index, parentLayer) ->
+  compile: (index=@index||@options.index, parentLayer) ->
     if not parentLayer # recompile
       @layers = []
       parentLayer = @layers
@@ -80,6 +80,17 @@ class Compile extends Selector
         @compileLayer(index[i], parentLayer)
     else
       @compileLayer(index, parentLayer)
+
+  # назначить событие слоя
+  setLayerEvent: (func, layer, eventName)->
+    layer["_" + eventName] = func
+    func = @functions[func] if @functions and (Object::toString.apply(func) is "[object String]") and @functions[func]
+    layer[eventName] = (cb) =>
+      try
+        func.call(layer, cb)
+      catch e
+        @log.error(eventName + " " + e)
+        cb()
 
   ###*
   * @param {Object} layer Слой для сборки
@@ -105,9 +116,9 @@ class Compile extends Selector
       childLayers: []
       childQueries: {}
       childStates: {}
-      oncheck: layer.oncheck || @empty
-      onload: layer.onload || @empty
-      onshow: layer.onshow || @empty
+      oncheck: if layer.oncheck then @setLayerEvent(layer.oncheck, layer, 'oncheck') else @empty
+      onload: if layer.onload then @setLayerEvent(layer.onload, layer, 'onload') else @empty
+      onshow: if layer.onshow then @setLayerEvent(layer.onshow, layer, 'onshow') else @empty
       parentLayer: parentLayer
       node: null
       regState: null

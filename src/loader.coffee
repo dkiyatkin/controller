@@ -24,6 +24,8 @@ class Loader extends Logger
         throw new Error("This browser does not support XMLHttpRequest.")
     else new XMLHttpRequest()
 
+  # TODO controller -> this
+
   # Выполнить js
   globalEval = (data, controller) =>
     head = controller.$('head')

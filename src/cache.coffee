@@ -8,26 +8,6 @@ else
 # Загружает кэш, вставленный на странице сервером.
 class Cache extends Nav
 
-  empty2 = ->
-  getCache = ->
-    Controller = window.Controller
-    @load.cache = Controller.server.cache
-    i = @layers.length
-    while --i >= 0
-      layer = @layers[i]
-      layer.show = Controller.server.visibleLayers[i]
-      if layer.show
-        # КЭШ
-        layer.data = @load.cache.data[layer.json] if not layer.data and layer.json and @load.cache.data[layer.json]
-        layer.tplString = @load.cache.text[layer.tpl] if not layer.htmlString and not layer.tplString and layer.tpl and @load.cache.text[layer.tpl]
-        layer.regState = @state.circle.state.match(new RegExp(layer.state, "im"))
-        # Событие показа
-        try
-          layer.onshow.bind(layer)(empty2)
-        catch e
-          @log.error "onshow() " + i + " " + e
-
-
   # Вспомогательные средства для работы со слоями
 
   # Перепарсить слой при следующем чеке.
@@ -124,20 +104,23 @@ class Cache extends Nav
       @meta.keywords = "" unless @meta.keywords
       @meta.description = "" unless @meta.description
       $head = @$("head")
-      description = @$("meta[name=description]")
-      keywords = @$("meta[name=keywords]")
-      if (keywords and keywords.length isnt 0)
-        $head.removeChild(keywords)
-      if (description and description.length isnt 0)
-        $head.removeChild(description)
-      meta = @document.createElement("meta")
-      meta.setAttribute "name", 'description'
-      meta.setAttribute "content", @meta.description
-      $head.appendChild meta
-      meta = @document.createElement("meta")
-      meta.setAttribute "name", 'keywords'
-      meta.setAttribute "content", @meta.keywords
-      $head.appendChild meta
+      $head = $head[0] if not $head.removeChild?
+      $description = @$("meta[name=description]")
+      $description = $description[0] if not $description.removeChild?
+      $keywords = @$("meta[name=keywords]")
+      $keywords = $keywords[0] if not $keywords.removeChild?
+      if ($keywords and $keywords.length isnt 0)
+        $head.removeChild($keywords)
+      if ($description and $description.length isnt 0)
+        $head.removeChild($description)
+      $meta = @document.createElement("meta")
+      $meta.setAttribute "name", 'description'
+      $meta.setAttribute "content", @meta.description
+      $head.appendChild $meta
+      $meta = @document.createElement("meta")
+      $meta.setAttribute "name", 'keywords'
+      $meta.setAttribute "content", @meta.keywords
+      $head.appendChild $meta
 
   constructor: (options={}) ->
     super
@@ -147,14 +130,35 @@ class Cache extends Nav
     @reparseAll = reparseAll
     @reparseLayer = reparseLayer
     #if not options.title? then options.title = true
-    if not options.cache? then options.cache = false
+    if not options.cache? then options.cache = true
     #var controller_server_cache = document.getElementById('controller_server_cache');
     #controller_server_cache.parentNode.removeChild(controller_server_cache);
     if options.cache
+
+      getCache = =>
+        LayerControl = window.LayerControl
+        @load.cache = LayerControl.server.cache
+        i = @layers.length
+        while --i >= 0
+          layer = @layers[i]
+          layer.show = LayerControl.server.visibleLayers[i]
+          if layer.show
+            # КЭШ
+            layer.data = @load.cache.data[layer.json] if not layer.data and layer.json and @load.cache.data[layer.json]
+            layer.tplString = @load.cache.text[layer.tpl] if not layer.htmlString and not layer.tplString and layer.tpl and @load.cache.text[layer.tpl]
+            layer.regState = @state.circle.state.match(new RegExp(layer.state, "im"))
+            # Событие показа
+            try
+              layer.onshow.bind(layer)(@empty)
+              # если alert() TODO
+            catch e
+              @log.error "onshow() " + i + " " + e
+
       @once "start", =>
         try
           getCache()
         catch e # можно открыть просто index.html
+          @log.error e
           @log.warn "fail cache"
 
 #x>

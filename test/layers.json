@@ -6,9 +6,16 @@
 			"tpl": "/test/templates/block.tpl",
 			"childQueries": {
 				"#newlayer": {
-					"htmlString": "hello world"
+					"htmlString": "hello world",
+					"state": "^/1$"
 				}
 			}
+		}
+	},
+	"childStates": {
+		"Страница": {
+			"htmlString": "Страница",
+			"query": "#newlayer"
 		}
 	}
 }

@@ -17,7 +17,7 @@ load = require('./load.coffee')
 
 module.exports = (options) ->
   functions = require(options.functions)
-  Controller = functions(require(__dirname+'/../src/cache.coffee'))
+  LayerControl = functions(require(__dirname+'/../src/cache.coffee'))
   index = JSON.parse(fs.readFileSync(options.publicDir + options.layers, 'utf-8'))
   main = fs.readFileSync(options.index, 'utf-8')
 
@@ -42,7 +42,7 @@ module.exports = (options) ->
       xmlMode: false
       lowerCaseTags: true
     })
-    controller = new Controller({
+    controller = new LayerControl({
       load: load
       logger: options.logger
       index: index
@@ -63,13 +63,13 @@ module.exports = (options) ->
       controller.load.cache.data[options.layers] = index
       serverCache = JSON.stringify(controller.load.cache).replace(/\//gim, "\\/")
       #serverCache = serverCache.replace(/\\\//gim, '/')
-      raw = 'if (window.Controller) { Controller.server = {}; Controller.server.visibleLayers = ' + JSON.stringify(getVisibleLayers(controller.layers)) + ';Controller.server.cache = '+serverCache + ' }'
+      raw = 'if (window.LayerControl) { LayerControl.server = {}; LayerControl.server.visibleLayers = ' + JSON.stringify(getVisibleLayers(controller.layers)) + ';LayerControl.server.cache = '+serverCache + ' }'
       script = '<script id="controller_server_cache" type="text/javascript">'+raw+'</script>'
       $('body').append(script)
       cb(controller.statusCode, $.html())
     controller.state(state)
 
-  _controller = new Controller({
+  _controller = new LayerControl({
     index: index
     logger: options.logger
     links: false

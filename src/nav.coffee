@@ -38,33 +38,8 @@ class Nav extends Layer
   # Расширение позволяющие сборке работать со ссылками
   ignore_protocols = ["^javascript:", "^mailto:", "^http://", "^https://", "^ftp://", "^//"]
 
-  # Обработчик для ссылок
-  handler = (e) ->
-    e = e or window.event
-    #e.stopPropagation ? e.stopPropagation() : (e.cancelBubble=true);
-    if not e.metaKey and not e.shiftKey and not e.altKey and not e.ctrlKey
-      targ = e.target or e.srcElement
-      targ = parentA(targ)
-      if targ
-        href = targ.getAttribute("href")
-        ignore = false
-        if href
-          unless targ.getAttribute("target")
-            i = ignore_protocols.length
-            while --i >= 0
-              ignore = true if RegExp(ignore_protocols[i], "gim").test(href)
-            unless ignore
-              try
-                (if e.preventDefault then e.preventDefault() else (e.returnValue = false))
-                @state @getState(href), =>
-                  @hash = targ.hash
-              #var x = window.scrollY; var y = window.scrollX;
-              catch e
-                console.error e
-                window.location = href
-
   # Подмена всех ссылок и осуществление переходов по страницам.
-  setLinks: ->
+  setLinks: (handler) ->
     $a = @$("a")
     i = $a.length
     while --i >= 0
@@ -77,12 +52,35 @@ class Nav extends Layer
     # по умолчанию ссылки включаются
     if not options.links? then options.links = true
     if options.links
-      @setLinks()
+      handler = (e) => # Обработчик для ссылок
+        e = e or window.event
+        #e.stopPropagation ? e.stopPropagation() : (e.cancelBubble=true);
+        if not e.metaKey and not e.shiftKey and not e.altKey and not e.ctrlKey
+          targ = e.target or e.srcElement
+          targ = parentA(targ)
+          if targ
+            href = targ.getAttribute("href")
+            ignore = false
+            if href
+              unless targ.getAttribute("target")
+                i = ignore_protocols.length
+                while --i >= 0
+                  ignore = true if RegExp(ignore_protocols[i], "gim").test(href)
+                unless ignore
+                  try
+                    (if e.preventDefault then e.preventDefault() else (e.returnValue = false))
+                    @state @getState(href), =>
+                      @hash = targ.hash
+                  #var x = window.scrollY; var y = window.scrollX;
+                  catch e
+                    console.error e
+                    # window.location = href # TODO
+      @setLinks(handler)
       @on "start", ->
         window.scrollTo 0, 0 unless @noscroll
         @noscroll = false
       @on "end", -> # Слои обработались
-        @setLinks()
+        @setLinks(handler)
     # Включает управление адресной строкой
     if not options.addressBar? then options.addressBar = true
     if options.addressBar

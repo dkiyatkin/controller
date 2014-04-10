@@ -602,6 +602,9 @@
       * @return {Array||Object} NodeList Список элементов, NodeList.length.
        */
       this.$ = options.$ || selector;
+      if (typeof window !== "undefined" && window !== null) {
+        this.document = window.document;
+      }
     }
 
     return Selector;
@@ -700,7 +703,7 @@
     Compile.prototype.compile = function(index, parentLayer) {
       var i, _i, _ref, _results;
       if (index == null) {
-        index = this.options.index;
+        index = this.index || this.options.index;
       }
       if (!parentLayer) {
         this.layers = [];
@@ -718,6 +721,25 @@
       } else {
         return this.compileLayer(index, parentLayer);
       }
+    };
+
+    Compile.prototype.setLayerEvent = function(func, layer, eventName) {
+      layer["_" + eventName] = func;
+      if (this.functions && (Object.prototype.toString.apply(func) === "[object String]") && this.functions[func]) {
+        func = this.functions[func];
+      }
+      return layer[eventName] = (function(_this) {
+        return function(cb) {
+          var e;
+          try {
+            return func.call(layer, cb);
+          } catch (_error) {
+            e = _error;
+            _this.log.error(eventName + " " + e);
+            return cb();
+          }
+        };
+      })(this);
     };
 
 
@@ -747,9 +769,9 @@
         childLayers: [],
         childQueries: {},
         childStates: {},
-        oncheck: layer.oncheck || this.empty,
-        onload: layer.onload || this.empty,
-        onshow: layer.onshow || this.empty,
+        oncheck: layer.oncheck ? this.setLayerEvent(layer.oncheck, layer, 'oncheck') : this.empty,
+        onload: layer.onload ? this.setLayerEvent(layer.onload, layer, 'onload') : this.empty,
+        onshow: layer.onshow ? this.setLayerEvent(layer.onshow, layer, 'onshow') : this.empty,
         parentLayer: parentLayer,
         node: null,
         regState: null,
@@ -1222,7 +1244,7 @@
     * @param {String} pathname Строка с именем состояния.
     * @return {String} Отформатированный вариант состояния.
      */
-    var getState, handler, ignore_protocols, parentA;
+    var getState, ignore_protocols, parentA;
 
     __extends(Nav, _super);
 
@@ -1255,48 +1277,7 @@
 
     ignore_protocols = ["^javascript:", "^mailto:", "^http://", "^https://", "^ftp://", "^//"];
 
-    handler = function(e) {
-      var href, i, ignore, targ;
-      e = e || window.event;
-      if (!e.metaKey && !e.shiftKey && !e.altKey && !e.ctrlKey) {
-        targ = e.target || e.srcElement;
-        targ = parentA(targ);
-        if (targ) {
-          href = targ.getAttribute("href");
-          ignore = false;
-          if (href) {
-            if (!targ.getAttribute("target")) {
-              i = ignore_protocols.length;
-              while (--i >= 0) {
-                if (RegExp(ignore_protocols[i], "gim").test(href)) {
-                  ignore = true;
-                }
-              }
-              if (!ignore) {
-                try {
-                  if (e.preventDefault) {
-                    e.preventDefault();
-                  } else {
-                    e.returnValue = false;
-                  }
-                  return this.state(this.getState(href), (function(_this) {
-                    return function() {
-                      return _this.hash = targ.hash;
-                    };
-                  })(this));
-                } catch (_error) {
-                  e = _error;
-                  console.error(e);
-                  return window.location = href;
-                }
-              }
-            }
-          }
-        }
-      }
-    };
-
-    Nav.prototype.setLinks = function() {
+    Nav.prototype.setLinks = function(handler) {
       var $a, i;
       $a = this.$("a");
       i = $a.length;
@@ -1307,7 +1288,7 @@
     };
 
     function Nav(options) {
-      var nowState;
+      var handler, nowState;
       if (options == null) {
         options = {};
       }
@@ -1317,7 +1298,46 @@
         options.links = true;
       }
       if (options.links) {
-        this.setLinks();
+        handler = (function(_this) {
+          return function(e) {
+            var href, i, ignore, targ;
+            e = e || window.event;
+            if (!e.metaKey && !e.shiftKey && !e.altKey && !e.ctrlKey) {
+              targ = e.target || e.srcElement;
+              targ = parentA(targ);
+              if (targ) {
+                href = targ.getAttribute("href");
+                ignore = false;
+                if (href) {
+                  if (!targ.getAttribute("target")) {
+                    i = ignore_protocols.length;
+                    while (--i >= 0) {
+                      if (RegExp(ignore_protocols[i], "gim").test(href)) {
+                        ignore = true;
+                      }
+                    }
+                    if (!ignore) {
+                      try {
+                        if (e.preventDefault) {
+                          e.preventDefault();
+                        } else {
+                          e.returnValue = false;
+                        }
+                        return _this.state(_this.getState(href), function() {
+                          return _this.hash = targ.hash;
+                        });
+                      } catch (_error) {
+                        e = _error;
+                        return console.error(e);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          };
+        })(this);
+        this.setLinks(handler);
         this.on("start", function() {
           if (!this.noscroll) {
             window.scrollTo(0, 0);
@@ -1325,7 +1345,7 @@
           return this.noscroll = false;
         });
         this.on("end", function() {
-          return this.setLinks();
+          return this.setLinks(handler);
         });
       }
       if (options.addressBar == null) {
@@ -1377,41 +1397,9 @@
   })(Layer);
 
   Cache = (function(_super) {
-    var checkExists, empty2, getCache, head, oncheckTplOptions, reparseAll, reparseLayer;
+    var checkExists, head, oncheckTplOptions, reparseAll, reparseLayer;
 
     __extends(Cache, _super);
-
-    empty2 = function() {};
-
-    getCache = function() {
-      var Controller, e, i, layer, _results;
-      Controller = window.Controller;
-      this.load.cache = Controller.server.cache;
-      i = this.layers.length;
-      _results = [];
-      while (--i >= 0) {
-        layer = this.layers[i];
-        layer.show = Controller.server.visibleLayers[i];
-        if (layer.show) {
-          if (!layer.data && layer.json && this.load.cache.data[layer.json]) {
-            layer.data = this.load.cache.data[layer.json];
-          }
-          if (!layer.htmlString && !layer.tplString && layer.tpl && this.load.cache.text[layer.tpl]) {
-            layer.tplString = this.load.cache.text[layer.tpl];
-          }
-          layer.regState = this.state.circle.state.match(new RegExp(layer.state, "im"));
-          try {
-            _results.push(layer.onshow.bind(layer)(empty2));
-          } catch (_error) {
-            e = _error;
-            _results.push(this.log.error("onshow() " + i + " " + e));
-          }
-        } else {
-          _results.push(void 0);
-        }
-      }
-      return _results;
-    };
 
     reparseLayer = function(layer) {
       var i, _results;
@@ -1512,7 +1500,7 @@
       })(this));
       return this.on("end", (function(_this) {
         return function() {
-          var $head, description, keywords, meta;
+          var $description, $head, $keywords, $meta;
           if (!_this.title) {
             if (_this.statusCode === 404) {
               _this.title = headObj.title["404"];
@@ -1531,27 +1519,37 @@
             _this.meta.description = "";
           }
           $head = _this.$("head");
-          description = _this.$("meta[name=description]");
-          keywords = _this.$("meta[name=keywords]");
-          if (keywords && keywords.length !== 0) {
-            $head.removeChild(keywords);
+          if ($head.removeChild == null) {
+            $head = $head[0];
           }
-          if (description && description.length !== 0) {
-            $head.removeChild(description);
+          $description = _this.$("meta[name=description]");
+          if ($description.removeChild == null) {
+            $description = $description[0];
           }
-          meta = _this.document.createElement("meta");
-          meta.setAttribute("name", 'description');
-          meta.setAttribute("content", _this.meta.description);
-          $head.appendChild(meta);
-          meta = _this.document.createElement("meta");
-          meta.setAttribute("name", 'keywords');
-          meta.setAttribute("content", _this.meta.keywords);
-          return $head.appendChild(meta);
+          $keywords = _this.$("meta[name=keywords]");
+          if ($keywords.removeChild == null) {
+            $keywords = $keywords[0];
+          }
+          if ($keywords && $keywords.length !== 0) {
+            $head.removeChild($keywords);
+          }
+          if ($description && $description.length !== 0) {
+            $head.removeChild($description);
+          }
+          $meta = _this.document.createElement("meta");
+          $meta.setAttribute("name", 'description');
+          $meta.setAttribute("content", _this.meta.description);
+          $head.appendChild($meta);
+          $meta = _this.document.createElement("meta");
+          $meta.setAttribute("name", 'keywords');
+          $meta.setAttribute("content", _this.meta.keywords);
+          return $head.appendChild($meta);
         };
       })(this));
     };
 
     function Cache(options) {
+      var getCache;
       if (options == null) {
         options = {};
       }
@@ -1562,9 +1560,40 @@
       this.reparseAll = reparseAll;
       this.reparseLayer = reparseLayer;
       if (options.cache == null) {
-        options.cache = false;
+        options.cache = true;
       }
       if (options.cache) {
+        getCache = (function(_this) {
+          return function() {
+            var LayerControl, e, i, layer, _results;
+            LayerControl = window.LayerControl;
+            _this.load.cache = LayerControl.server.cache;
+            i = _this.layers.length;
+            _results = [];
+            while (--i >= 0) {
+              layer = _this.layers[i];
+              layer.show = LayerControl.server.visibleLayers[i];
+              if (layer.show) {
+                if (!layer.data && layer.json && _this.load.cache.data[layer.json]) {
+                  layer.data = _this.load.cache.data[layer.json];
+                }
+                if (!layer.htmlString && !layer.tplString && layer.tpl && _this.load.cache.text[layer.tpl]) {
+                  layer.tplString = _this.load.cache.text[layer.tpl];
+                }
+                layer.regState = _this.state.circle.state.match(new RegExp(layer.state, "im"));
+                try {
+                  _results.push(layer.onshow.bind(layer)(_this.empty));
+                } catch (_error) {
+                  e = _error;
+                  _results.push(_this.log.error("onshow() " + i + " " + e));
+                }
+              } else {
+                _results.push(void 0);
+              }
+            }
+            return _results;
+          };
+        })(this);
         this.once("start", (function(_this) {
           return function() {
             var e;
@@ -1572,6 +1601,7 @@
               return getCache();
             } catch (_error) {
               e = _error;
+              _this.log.error(e);
               return _this.log.warn("fail cache");
             }
           };

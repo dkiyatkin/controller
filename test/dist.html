@@ -12,36 +12,20 @@
 </head>
 
 <body>
+	<a href='/'>/</a>
+	<a href='/Страница/'>/Страница/</a>
 	<div id='base_html'>
 	</div>
 	<script>
 		var controller = new window.LayerControl({
-			logger: "DEBUG",
-			index: {
-				"query": "#base_html",
-				"htmlString": "<article></article>",
-				"childQueries": {
-					"article": {
-						"tpl": "/test/templates/block.tpl",
-						"childQueries": {
-							"#newlayer": {
-								"htmlString": "hello world",
-								"state": "^/1$"
-							}
-						}
-					}
-				},
-				"childStates": {
-					"Страница": {
-						"htmlString": "Страница",
-						"query": "#newlayer"
-					}
-				}
-			},
+			logger: 'DEBUG',
 			addressBar: false
 		});
-		controller.state('/');
-		// controller.state('/Страница');
+		controller.load.json('/test/layers.json', function(err, index) {
+			controller.index = index;
+			// controller.state('/');
+			// controller.state('/Страница');
+		});
 	</script>
 </body>
 
