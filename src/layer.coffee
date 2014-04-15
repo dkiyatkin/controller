@@ -112,30 +112,38 @@ class Layer extends State
         @state.circle.loading++
         @externalLayer layer, =>
           layer.oncheck => # сработает у всех слоев которые должны быть показаны
-            layer.nowState = @state.circle.state
+            layer.lastState = @state.circle.state
             layer.status = 'insert'
             if layer.show
               @state.circle.loading--
-              @emit 'circle'
+              setTimeout(() =>
+                @emit 'circle'
+              , 0)
             else
               @loadLayer layer, (err) =>
                 if err
                   @log.error "layer can not be inserted", layer.id
                   layer.status = 'wrong insert'
                   @state.circle.loading--
-                  @emit 'circle'
+                  setTimeout(() =>
+                    @emit 'circle'
+                  , 0)
                 else
                   if @state.circle.interrupt
                     @log.debug "check interrupt 2"
                     @state.circle.loading--
-                    @emit 'circle'
+                    setTimeout(() =>
+                      @emit 'circle'
+                    , 0)
                   else
                     @$(layer.query).html(layer.htmlString)
-                    layer.lastState = @state.circle.state
+                    layer.showState = @state.circle.state
                     layer.show = true
                     layer.onshow =>
                       @state.circle.loading--
-                      @emit 'circle'
+                      setTimeout(() =>
+                        @emit 'circle'
+                      , 0)
 
   # скрыть слой и всех его потомков
   disableLayer = (layer) ->

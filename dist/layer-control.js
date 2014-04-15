@@ -186,23 +186,23 @@
     };
 
     globalEval = function(data, controller) {
-      var head, script;
-      head = controller.$('head');
+      var $head, script;
+      $head = controller.$('head')[0];
       script = controller.document.createElement("script");
       script.type = "text/javascript";
       script.text = data;
-      head.insertBefore(script, head.firstChild);
-      return head.removeChild(script);
+      $head.insertBefore(script, $head.firstChild);
+      return $head.removeChild(script);
     };
 
     setXDR = function(path, controller) {
-      var head, script;
+      var $head, script;
       script = controller.document.createElement("script");
       script.type = "text/javascript";
-      head = controller.$('head');
+      $head = controller.$('head')[0];
       script.src = path;
-      head.insertBefore(script, head.firstChild);
-      return head.removeChild(script);
+      $head.insertBefore(script, $head.firstChild);
+      return $head.removeChild(script);
     };
 
     _clearRegCache = function(clean, obj) {
@@ -329,7 +329,7 @@
           }
           if (_this.load.cache.text[path] == null) {
             if (!_this.load.loading[path]) {
-              _this.load[path] = true;
+              _this.load.loading[path] = true;
               return _this.load.load(path, options, function(err, ans) {
                 _this.load.cache.text[path] = ans;
                 if (err) {
@@ -434,15 +434,15 @@
             return cb(null);
           } else {
             options.type = 'text';
-            return _this.load(path, function(err, options, ans) {
+            return _this.load(path, options, function(err, ans) {
               var e;
               if (!err) {
                 try {
-                  globalEval(ans, this);
+                  globalEval(ans, _this);
                   return cb(null);
                 } catch (_error) {
                   e = _error;
-                  this.log.error("wrong js " + path);
+                  _this.log.error("wrong js " + path);
                   return cb(e);
                 }
               } else {
@@ -477,7 +477,7 @@
               globalEval(node.innerHTML, _this);
             } catch (_error) {
               e = _error;
-              _this.log.error("Ошибка в скрипте.");
+              _this.log.error(e, "Ошибка в скрипте.");
             }
             return _busy = false;
           }
@@ -490,7 +490,7 @@
        */
       this.load.css = (function(_this) {
         return function(code) {
-          var head, style;
+          var $head, style;
           if (_this.load.cache.css[code]) {
             return;
           }
@@ -502,8 +502,8 @@
           } else {
             style.appendChild(_this.document.createTextNode(code));
           }
-          head = _this.$('head');
-          return head.insertBefore(style, head.lastChild);
+          $head = _this.$('head')[0];
+          return $head.insertBefore(style, $head.lastChild);
         };
       })(this);
 
@@ -533,68 +533,125 @@
   })(Logger);
 
   Selector = (function(_super) {
-    var find, html, selector;
+    var getStyle, uniqueId;
 
     __extends(Selector, _super);
 
-    html = function(htmlString) {
-      var i;
-      if (htmlString != null) {
-        if (this.length != null) {
-          i = this.length;
-          while (--i >= 0) {
-            this[i].innerHTML = htmlString;
-          }
-        } else {
-          this.innerHTML = htmlString;
-        }
-        return this;
+    uniqueId = function(length) {
+      var id;
+      if (length == null) {
+        length = 8;
+      }
+      id = "";
+      while (id.length < length) {
+        id += Math.random().toString(36).substr(2);
+      }
+      return id.substr(0, length);
+    };
+
+    getStyle = function(el, cssprop) {
+      if (el.currentStyle) {
+        return el.currentStyle[cssprop];
+      } else if (window.document.defaultView && window.document.defaultView.getComputedStyle) {
+        return window.document.defaultView.getComputedStyle(el, "")[cssprop];
       } else {
-        if (this.length != null) {
-          return this[this.length - 1].innerHTML;
-        } else {
-          return this.innerHTML;
-        }
+        return el.style[cssprop];
       }
-    };
-
-    find = function(query) {
-      var i, ii, node, node_child;
-      node_child = [];
-      node_child.find = find;
-      node_child.html = html;
-      if (this.length > 1) {
-        i = this.length;
-        while (--i >= 0) {
-          node = this[i].querySelectorAll(query);
-          ii = node.length;
-          while (--ii >= 0) {
-            node[ii].find = find;
-            node[ii].html = html;
-            node_child.push(node[ii]);
-          }
-        }
-      } else if (this.length === 1) {
-        node_child = this[0].querySelectorAll(query);
-        node_child.find = find;
-        node_child.html = html;
-      }
-      return node_child;
-    };
-
-    selector = function(query) {
-      var node_parent;
-      node_parent = window.document.querySelectorAll(query);
-      node_parent.find = find;
-      node_parent.html = html;
-      return node_parent;
     };
 
     function Selector(options) {
+      var find, html, pasteHTML, selector;
       if (options == null) {
         options = {};
       }
       Selector.__super__.constructor.apply(this, arguments);
+      pasteHTML = (function(_this) {
+        return function(el, html) {
+          var b, bug, css, i, script, scripts, t, tempid, _css;
+          if (/<(style+)([^>]+)*(?:>)/g.test(html) || /<(script+)([^>]+)*(?:>)/g.test(html)) {
+            window.LayerControl.scriptautoexec = false;
+            tempid = "layerControl_" + uniqueId();
+            html = "<span id=\"" + tempid + "\" style=\"display:none\">" + "<style>#" + tempid + "{ width:3px }</style>" + "<script type=\"text/javascript\">window.LayerControl.scriptautoexec=true;</script>" + "1</span>" + html;
+            el.innerHTML = html;
+            if (!window.LayerControl.scriptautoexec) {
+              scripts = el.getElementsByTagName("script");
+              i = 1;
+              script = void 0;
+              while (script = scripts[i]) {
+                _this.load.script(script);
+                i++;
+              }
+            }
+            bug = _this.document.getElementById(tempid);
+            if (bug) {
+              b = getStyle(bug, "width");
+              if (b !== "3px") {
+                _css = el.getElementsByTagName("style");
+                i = 0;
+                css = void 0;
+                while (css = _css[i]) {
+                  t = css.cssText;
+                  _this.load.css(t);
+                  i++;
+                }
+              }
+              return el.removeChild(bug);
+            }
+          } else {
+            return el.innerHTML = html;
+          }
+        };
+      })(this);
+      html = function(htmlString) {
+        var i;
+        if (htmlString != null) {
+          if (this.length != null) {
+            i = this.length;
+            while (--i >= 0) {
+              pasteHTML(this[i], htmlString);
+            }
+          } else {
+            pasteHTML(this, htmlString);
+          }
+          return this;
+        } else {
+          if (this.length != null) {
+            return this[this.length - 1].innerHTML;
+          } else {
+            return this.innerHTML;
+          }
+        }
+      };
+      find = function(query) {
+        var i, ii, node, node_child;
+        node_child = [];
+        node_child.find = find;
+        node_child.html = html;
+        if (this.length > 1) {
+          i = this.length;
+          while (--i >= 0) {
+            node = this[i].querySelectorAll(query);
+            ii = node.length;
+            while (--ii >= 0) {
+              node[ii].find = find;
+              node[ii].html = html;
+              node_child.push(node[ii]);
+            }
+          }
+        } else if (this.length === 1) {
+          node_child = this[0].querySelectorAll(query);
+          node_child.find = find;
+          node_child.html = html;
+        }
+        return node_child;
+      };
+      selector = function(query) {
+        var node_parent;
+        node_parent = window.document.querySelectorAll(query);
+        node_parent.find = find;
+        node_parent.html = html;
+        return node_parent;
+      };
 
       /**
       * Возвращает NodeList
@@ -706,6 +763,7 @@
         index = this.index || this.options.index;
       }
       if (!parentLayer) {
+        this.ids = {};
         this.layers = [];
         parentLayer = this.layers;
         parentLayer.show = true;
@@ -724,11 +782,10 @@
     };
 
     Compile.prototype.setLayerEvent = function(func, layer, eventName) {
-      layer["_" + eventName] = func;
       if (this.functions && (Object.prototype.toString.apply(func) === "[object String]") && this.functions[func]) {
         func = this.functions[func];
       }
-      return layer[eventName] = (function(_this) {
+      return (function(_this) {
         return function(cb) {
           var e;
           try {
@@ -743,7 +800,7 @@
     };
 
 
-    /**
+    /*
     * @param {Object} layer Слой для сборки
     * @param {Object} parentLayer Собранный родительский слой
     *
@@ -769,9 +826,6 @@
         childLayers: [],
         childQueries: {},
         childStates: {},
-        oncheck: layer.oncheck ? this.setLayerEvent(layer.oncheck, layer, 'oncheck') : this.empty,
-        onload: layer.onload ? this.setLayerEvent(layer.onload, layer, 'onload') : this.empty,
-        onshow: layer.onshow ? this.setLayerEvent(layer.onshow, layer, 'onshow') : this.empty,
         parentLayer: parentLayer,
         node: null,
         regState: null,
@@ -780,6 +834,10 @@
       };
       this.layers.push(newParentLayer);
       newParentLayer.id = layer.id || this.layers.length;
+      this.ids[newParentLayer.id] = newParentLayer;
+      newParentLayer.oncheck = layer.oncheck ? this.setLayerEvent(layer.oncheck, newParentLayer, 'oncheck') : this.empty;
+      newParentLayer.onload = layer.onload ? this.setLayerEvent(layer.onload, newParentLayer, 'onload') : this.empty;
+      newParentLayer.onshow = layer.onshow ? this.setLayerEvent(layer.onshow, newParentLayer, 'onshow') : this.empty;
       if (layer.label) {
         layerLabels = layer.label.split(' ');
         for (i = _i = 0, _ref = layerLabels.length; 0 <= _ref ? _i < _ref : _i > _ref; i = 0 <= _ref ? ++_i : --_i) {
@@ -1159,30 +1217,38 @@
             _this.state.circle.loading++;
             return _this.externalLayer(layer, function() {
               return layer.oncheck(function() {
-                layer.nowState = _this.state.circle.state;
+                layer.lastState = _this.state.circle.state;
                 layer.status = 'insert';
                 if (layer.show) {
                   _this.state.circle.loading--;
-                  return _this.emit('circle');
+                  return setTimeout(function() {
+                    return _this.emit('circle');
+                  }, 0);
                 } else {
                   return _this.loadLayer(layer, function(err) {
                     if (err) {
                       _this.log.error("layer can not be inserted", layer.id);
                       layer.status = 'wrong insert';
                       _this.state.circle.loading--;
-                      return _this.emit('circle');
+                      return setTimeout(function() {
+                        return _this.emit('circle');
+                      }, 0);
                     } else {
                       if (_this.state.circle.interrupt) {
                         _this.log.debug("check interrupt 2");
                         _this.state.circle.loading--;
-                        return _this.emit('circle');
+                        return setTimeout(function() {
+                          return _this.emit('circle');
+                        }, 0);
                       } else {
                         _this.$(layer.query).html(layer.htmlString);
-                        layer.lastState = _this.state.circle.state;
+                        layer.showState = _this.state.circle.state;
                         layer.show = true;
                         return layer.onshow(function() {
                           _this.state.circle.loading--;
-                          return _this.emit('circle');
+                          return setTimeout(function() {
+                            return _this.emit('circle');
+                          }, 0);
                         });
                       }
                     }
@@ -1405,24 +1471,20 @@
       var i, _results;
       layer.show = false;
       if (layer.json) {
-        layer.data = false;
+        delete layer.data;
       }
       if (layer.tpl) {
-        layer.tplString = "";
-        layer.htmlString = "";
-      } else {
-        if (layer.tplString) {
-          layer.htmlString = "";
-        }
+        delete layer.tplString;
+        delete layer.htmlString;
+      } else if (layer.tplString) {
+        delete layer.htmlString;
       }
-      if (layer.childLayers) {
-        i = layer.childLayers.length;
-        _results = [];
-        while (--i >= 0) {
-          _results.push(layer.childLayers[i].show = false);
-        }
-        return _results;
+      i = layer.childLayers.length;
+      _results = [];
+      while (--i >= 0) {
+        _results.push(layer.childLayers[i].show = false);
       }
+      return _results;
     };
 
     reparseAll = function() {
@@ -1581,6 +1643,8 @@
                   layer.tplString = _this.load.cache.text[layer.tpl];
                 }
                 layer.regState = _this.state.circle.state.match(new RegExp(layer.state, "im"));
+                layer.lastState = LayerControl.server.state;
+                layer.showState = LayerControl.server.state;
                 try {
                   _results.push(layer.onshow.bind(layer)(_this.empty));
                 } catch (_error) {

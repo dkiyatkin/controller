@@ -63,7 +63,7 @@ module.exports = (options) ->
       controller.load.cache.data[options.layers] = index
       serverCache = JSON.stringify(controller.load.cache).replace(/\//gim, "\\/")
       #serverCache = serverCache.replace(/\\\//gim, '/')
-      raw = 'if (window.LayerControl) { LayerControl.server = {}; LayerControl.server.visibleLayers = ' + JSON.stringify(getVisibleLayers(controller.layers)) + ';LayerControl.server.cache = '+serverCache + ' }'
+      raw = 'if (window.LayerControl) { LayerControl.server = {}; LayerControl.server.visibleLayers = ' + JSON.stringify(getVisibleLayers(controller.layers)) + ';LayerControl.server.cache = '+serverCache + ';LayerControl.server.state = "'+state+'" }'
       script = '<script id="controller_server_cache" type="text/javascript">'+raw+'</script>'
       $('body').append(script)
       cb(controller.statusCode, $.html())

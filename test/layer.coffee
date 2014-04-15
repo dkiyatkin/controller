@@ -196,8 +196,7 @@ exports.layer = (test) ->
   )
   test.expect 1
   controller.once "end", ->
-    #test.equal controller.ids.length, controller.layers[0].length, "ids length"
-    test.ok(true)
+    test.equal controller.ids['1'], controller.layers[0], "ids"
     test.done()
   controller.state()
 

@@ -28,21 +28,21 @@ class Loader extends Logger
 
   # Выполнить js
   globalEval = (data, controller) =>
-    head = controller.$('head')
+    $head = controller.$('head')[0]
     script = controller.document.createElement("script")
     script.type = "text/javascript"
     script.text = data
-    head.insertBefore script, head.firstChild
-    head.removeChild script
+    $head.insertBefore script, $head.firstChild
+    $head.removeChild script
 
   # Кросс-доменный запрос
   setXDR = (path, controller) =>
     script = controller.document.createElement("script")
     script.type = "text/javascript"
-    head = controller.$('head')
+    $head = controller.$('head')[0]
     script.src = path
-    head.insertBefore script, head.firstChild
-    head.removeChild script
+    $head.insertBefore script, $head.firstChild
+    $head.removeChild script
 
   # Очистка кэша по регекспу
   _clearRegCache = (clean, obj) ->
@@ -123,7 +123,7 @@ class Loader extends Logger
       cb = options if not cb
       if (!@load.cache.text[path]?)
         unless @load.loading[path]
-          @load[path] = true
+          @load.loading[path] = true
           @load.load path, options, (err, ans) =>
             @load.cache.text[path] = ans
             @log.error "error load " + path if err
@@ -200,7 +200,7 @@ class Loader extends Logger
         cb null
       else
         options.type = 'text'
-        @load path, (err, options, ans) ->
+        @load path, options, (err, ans) =>
           if not err
             try
               globalEval ans, @ # <-
@@ -209,6 +209,7 @@ class Loader extends Logger
               @log.error "wrong js " + path
               cb e
           else cb err
+
     _busy = false
 
     ###*
@@ -229,7 +230,7 @@ class Loader extends Logger
         try
           globalEval node.innerHTML, @
         catch e
-          @log.error "Ошибка в скрипте."
+          @log.error e, "Ошибка в скрипте."
         _busy = false
 
     ###*
@@ -245,8 +246,8 @@ class Loader extends Logger
         style.styleSheet.cssText = code
       else
         style.appendChild @document.createTextNode(code)
-      head = @$('head')
-      head.insertBefore style, head.lastChild #добавили css на страницу
+      $head = @$('head')[0]
+      $head.insertBefore style, $head.lastChild #добавили css на страницу
 
     ###*
     * Очищает кэш в зависимости от переданного параметра.

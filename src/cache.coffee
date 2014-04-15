@@ -14,19 +14,18 @@ class Cache extends Nav
   # @param {Object} layer Слой, который будет перепарсен.
   reparseLayer = (layer) =>
     layer.show = false
-    # если есть данные для загрузки, убрать данные сохраненные у слоя
-    layer.data = false if layer.json
+    delete layer.data if layer.json
     # если есть шаблон для загрузки, убрать текст сохраненный у слоя
     if layer.tpl
-      layer.tplString = ""
-      layer.htmlString = ""
-    else layer.htmlString = "" if layer.tplString
+      delete layer.tplString
+      delete layer.htmlString
+    else if layer.tplString
+      delete layer.htmlString
     # если есть наследники, то скрыть их и показать заново
-    if layer.childLayers
-      i = layer.childLayers.length
-      while --i >= 0
-        #@reparseLayer(layer.childLayers[l]);
-        layer.childLayers[i].show = false
+    i = layer.childLayers.length
+    while --i >= 0
+      # @reparseLayer(layer.childLayers[l]);
+      layer.childLayers[i].show = false
 
   # Перепарсить все слои.
   # @return {Undefined}
@@ -147,6 +146,8 @@ class Cache extends Nav
             layer.data = @load.cache.data[layer.json] if not layer.data and layer.json and @load.cache.data[layer.json]
             layer.tplString = @load.cache.text[layer.tpl] if not layer.htmlString and not layer.tplString and layer.tpl and @load.cache.text[layer.tpl]
             layer.regState = @state.circle.state.match(new RegExp(layer.state, "im"))
+            layer.lastState = LayerControl.server.state
+            layer.showState = LayerControl.server.state
             # Событие показа
             try
               layer.onshow.bind(layer)(@empty)
