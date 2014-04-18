@@ -143,8 +143,8 @@ class Cache extends Nav
           layer.show = LayerControl.server.visibleLayers[i]
           if layer.show
             # КЭШ
-            layer.data = @load.cache.data[layer.json] if not layer.data and layer.json and @load.cache.data[layer.json]
-            layer.tplString = @load.cache.text[layer.tpl] if not layer.htmlString and not layer.tplString and layer.tpl and @load.cache.text[layer.tpl]
+            layer.data = @load.cache.data[layer.json] if not layer.data and layer.json and @load.cache.data[layer.json]?
+            layer.tplString = @load.cache.text[layer.tpl] if not layer.htmlString and not layer.tplString and layer.tpl and @load.cache.text[layer.tpl]?
             layer.regState = @state.circle.state.match(new RegExp(layer.state, "im"))
             layer.lastState = LayerControl.server.state
             layer.showState = LayerControl.server.state

@@ -331,13 +331,14 @@
             if (!_this.load.loading[path]) {
               _this.load.loading[path] = true;
               return _this.load.load(path, options, function(err, ans) {
-                _this.load.cache.text[path] = ans;
                 if (err) {
                   _this.log.error("error load " + path);
+                } else {
+                  _this.load.cache.text[path] = ans;
                 }
                 _this.load.loading[path] = false;
                 _this.emit("loaded: " + path, err);
-                return cb(err, _this.load.cache.text[path]);
+                return cb(err, ans);
               });
             } else {
               _this.log.debug("multiply loading: " + path);
@@ -1344,8 +1345,17 @@
     ignore_protocols = ["^javascript:", "^mailto:", "^http://", "^https://", "^ftp://", "^//"];
 
     Nav.prototype.setLinks = function(handler) {
-      var $a, i;
+      var $a, href, i;
       $a = this.$("a");
+      i = $a.length;
+      if (location.origin) {
+        while (--i >= 0) {
+          href = $a[i].getAttribute('href');
+          if (href && (href.indexOf(location.origin) === 0)) {
+            $a[i].setAttribute('href', href.slice(location.origin.length));
+          }
+        }
+      }
       i = $a.length;
       while (--i >= 0) {
         $a[i].onclick = handler;
@@ -1636,10 +1646,10 @@
               layer = _this.layers[i];
               layer.show = LayerControl.server.visibleLayers[i];
               if (layer.show) {
-                if (!layer.data && layer.json && _this.load.cache.data[layer.json]) {
+                if (!layer.data && layer.json && (_this.load.cache.data[layer.json] != null)) {
                   layer.data = _this.load.cache.data[layer.json];
                 }
-                if (!layer.htmlString && !layer.tplString && layer.tpl && _this.load.cache.text[layer.tpl]) {
+                if (!layer.htmlString && !layer.tplString && layer.tpl && (_this.load.cache.text[layer.tpl] != null)) {
                   layer.tplString = _this.load.cache.text[layer.tpl];
                 }
                 layer.regState = _this.state.circle.state.match(new RegExp(layer.state, "im"));

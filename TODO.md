@@ -1,3 +1,6 @@
-Promise, EventEmitter на сервере и на клиенте как быть
+# Нужно сделать
+	Promise, EventEmitter на сервере и на клиенте как быть
 
-travis
+	travis
+
+# Сделано

@@ -61,6 +61,7 @@ module.exports = (options) ->
       # TODO проверить как вставляется meta
       if not controller.statusCode then controller.statusCode = 200
       controller.load.cache.data[options.layers] = index
+      controller.load.clearCache() if controller.statusCode isnt 200 # если 404 то после страницы ошибки пусть будет возможность на клиенте попробовать загрузить недостающие данные второй раз при переходе на эту страницу
       serverCache = JSON.stringify(controller.load.cache).replace(/\//gim, "\\/")
       #serverCache = serverCache.replace(/\\\//gim, '/')
       raw = 'if (window.LayerControl) { LayerControl.server = {}; LayerControl.server.visibleLayers = ' + JSON.stringify(getVisibleLayers(controller.layers)) + ';LayerControl.server.cache = '+serverCache + ';LayerControl.server.state = "'+state+'" }'

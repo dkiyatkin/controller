@@ -42,6 +42,12 @@ class Nav extends Layer
   setLinks: (handler) ->
     $a = @$("a")
     i = $a.length
+    if location.origin # если совподает адрес сайта, то убираем его для отключения полной перезагрузки TODO возможно это нужно сделать в другом месте
+      while --i >= 0
+        href = $a[i].getAttribute('href')
+        if href and (href.indexOf(location.origin) is 0)
+          $a[i].setAttribute('href', href.slice(location.origin.length))
+    i = $a.length
     while --i >= 0
       $a[i].onclick = handler
     return $a

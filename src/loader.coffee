@@ -125,11 +125,13 @@ class Loader extends Logger
         unless @load.loading[path]
           @load.loading[path] = true
           @load.load path, options, (err, ans) =>
-            @load.cache.text[path] = ans
-            @log.error "error load " + path if err
+            if err # не записывать в кэш запрос с ошибкой
+              @log.error "error load " + path
+            else
+              @load.cache.text[path] = ans
             @load.loading[path] = false
             @emit "loaded: " + path, err
-            cb err, @load.cache.text[path]
+            cb err, ans
         else
           @log.debug "multiply loading: " + path
           @once "loaded: " + path, (err) =>
