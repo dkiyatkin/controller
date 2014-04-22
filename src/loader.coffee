@@ -66,6 +66,7 @@ class Loader extends Logger
       try
         timeout = false
         req = new createRequestObject()
+        url = encodeURI(url)
         if options.timestamp
           if url.indexOf('?') is -1
             url = url+'?timestamp='+new Date().getTime()
